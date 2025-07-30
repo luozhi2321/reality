@@ -58,6 +58,30 @@ proxies:
       Host: r.luozhi.site                     
 
 
+- name: hk.luozhi.site
+  type: vless
+  server : hk.luozhi.site
+  port : 10707
+  uuid : 58b51418-8ddf-488e-d41a-d4ca5e2e0811
+  tls : true
+  sni : hk.luozhi.site
+  alpn : [ "h2", "http/1.1" ]
+  skip-cert-verify : false
+  network : ws
+  ws-opts : { "path": "/" }
+
+- name: 越南
+  type: vless  
+  server : 59.153.218.122
+  port : 34045
+  uuid : d8dd94fd-540e-461d-b5d4-acebef02c22a
+  tls : true
+  sni : visit-this-invitation-link-to-join-tg-enkelte-notif.ekt.me
+  client-fingerprint : firefox
+  alpn : [ "default" ]
+  skip-cert-verify : false
+  reality-opts : { "public-key": "cDaDzPr3PlS3NM8lreHZbdo-Mhqz8vMBzMSkHXhGIUA", "short-id": "e8ab71d0" }
+  network : tcp
 
 
 
@@ -97,7 +121,8 @@ proxy-groups:
     - vmess-ws-racknerd-21de492
     - hysteria2-racknerd-21de492
     - tuic5-racknerd-21de492
-
+    - hk.luozhi.site
+    - 越南
 - name: 自动选择
   type: url-test
   url: https://www.gstatic.com/generate_204
@@ -108,7 +133,8 @@ proxy-groups:
     - vmess-ws-racknerd-21de492
     - hysteria2-racknerd-21de492
     - tuic5-racknerd-21de492
-
+    - hk.luozhi.site
+    - 越南
 - name: 🌍选择代理节点
   type: select
   proxies:
@@ -119,7 +145,8 @@ proxy-groups:
     - vmess-ws-racknerd-21de492
     - hysteria2-racknerd-21de492
     - tuic5-racknerd-21de492
-
+    - hk.luozhi.site
+    - 越南
 rules:
   - GEOIP,LAN,DIRECT
   - GEOIP,CN,DIRECT
