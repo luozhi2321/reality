@@ -1,0 +1,3 @@
+proxies:
+  - {"type":"vless","name":"HK","server":"hk.luozhi.site","port":10707,"uuid":"58b51418-8ddf-488e-d41a-d4ca5e2e0811","tls":true,"client-fingerprint":"","alpn":["h2","http/1.1"],"skip-cert-verify":false,"network":"ws","ws-opts":{"path":"/"},"servername":"hk.luozhi.site"}
+  - {"type":"vless","name":"🇻🇳 VN| TG@pgkj666","server":"59.153.218.122","port":34045,"uuid":"d8dd94fd-540e-461d-b5d4-acebef02c22a","tls":true,"client-fingerprint":"firefox","alpn":["default"],"skip-cert-verify":false,"reality-opts":{"public-key":"cDaDzPr3PlS3NM8lreHZbdo-Mhqz8vMBzMSkHXhGIUA","short-id":"e8ab71d0"},"network":"tcp","servername":"visit-this-invitation-link-to-join-tg-enkelte-notif.ekt.me"}
