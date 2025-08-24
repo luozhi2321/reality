@@ -1,3 +1,125 @@
+port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+unified-delay: true
+global-client-fingerprint: chrome
+dns:
+  enable: false
+  listen: :53
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver: 
+    - 223.5.5.5
+    - 8.8.8.8
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fallback:
+    - https://1.0.0.1/dns-query
+    - tls://dns.google
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+      - 240.0.0.0/4
+
 proxies:
-  - {"type":"vless","name":"HK","server":"hk.luozhi.site","port":10707,"uuid":"58b51418-8ddf-488e-d41a-d4ca5e2e0811","tls":true,"client-fingerprint":"","alpn":["h2","http/1.1"],"skip-cert-verify":false,"network":"ws","ws-opts":{"path":"/"},"servername":"hk.luozhi.site"}
-  - {"type":"vless","name":"🇻🇳 VN| TG@pgkj666","server":"59.153.218.122","port":34045,"uuid":"d8dd94fd-540e-461d-b5d4-acebef02c22a","tls":true,"client-fingerprint":"firefox","alpn":["default"],"skip-cert-verify":false,"reality-opts":{"public-key":"cDaDzPr3PlS3NM8lreHZbdo-Mhqz8vMBzMSkHXhGIUA","short-id":"e8ab71d0"},"network":"tcp","servername":"visit-this-invitation-link-to-join-tg-enkelte-notif.ekt.me"}
+- name: vless-reality-vision-ser689214569345               
+  type: vless
+  server: 154.219.115.30                           
+  port: 64733                                
+  uuid: 41e21555-a0f8-4bea-889b-4ed4773dbc57   
+  network: tcp
+  udp: true
+  tls: true
+  flow: xtls-rprx-vision
+  servername: www.yahoo.com                 
+  reality-opts: 
+    public-key: E-cP9rGTuZUW7fx8ovK9WrblymESdVLFWUd5xj6sRxs    
+    short-id: 3e9f39f4                    
+  client-fingerprint: chrome                  
+
+- name: vmess-ws-ser689214569345                         
+  type: vmess
+  server: 154.219.115.30                        
+  port: 2086                                     
+  uuid: 41e21555-a0f8-4bea-889b-4ed4773dbc57       
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: false
+  network: ws
+  servername: www.bing.com                    
+  ws-opts:
+    path: "41e21555-a0f8-4bea-889b-4ed4773dbc57-vm"                             
+    headers:
+      Host: www.bing.com                     
+
+
+
+
+
+- name: hysteria2-ser689214569345                            
+  type: hysteria2                                      
+  server: 154.219.115.30                               
+  port: 20987                                
+  password: 41e21555-a0f8-4bea-889b-4ed4773dbc57                          
+  alpn:
+    - h3
+  sni: www.bing.com                               
+  skip-cert-verify: true
+  fast-open: true
+
+- name: tuic5-ser689214569345                            
+  server: 154.219.115.30                      
+  port: 23732                                    
+  type: tuic
+  uuid: 41e21555-a0f8-4bea-889b-4ed4773dbc57       
+  password: 41e21555-a0f8-4bea-889b-4ed4773dbc57   
+  alpn: [h3]
+  disable-sni: true
+  reduce-rtt: true
+  udp-relay-mode: native
+  congestion-controller: bbr
+  sni: www.bing.com                                
+  skip-cert-verify: true
+
+proxy-groups:
+- name: 负载均衡
+  type: load-balance
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  strategy: round-robin
+  proxies:
+    - vless-reality-vision-ser689214569345                              
+    - vmess-ws-ser689214569345
+    - hysteria2-ser689214569345
+    - tuic5-ser689214569345
+
+- name: 自动选择
+  type: url-test
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  proxies:
+    - vless-reality-vision-ser689214569345                              
+    - vmess-ws-ser689214569345
+    - hysteria2-ser689214569345
+    - tuic5-ser689214569345
+    
+- name: 🌍选择代理节点
+  type: select
+  proxies:
+    - 负载均衡                                         
+    - 自动选择
+    - DIRECT
+    - vless-reality-vision-ser689214569345                              
+    - vmess-ws-ser689214569345
+    - hysteria2-ser689214569345
+    - tuic5-ser689214569345
+rules:
+  - GEOIP,LAN,DIRECT
+  - GEOIP,CN,DIRECT
+  - MATCH,🌍选择代理节点
