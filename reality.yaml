@@ -218,26 +218,6 @@ proxy-groups:
     - hysteria2-VM99429
     - tuic5-VM99429
 
-proxy-groups:
-- name: 负载均衡
-  type: load-balance
-  url: https://www.gstatic.com/generate_204
-  interval: 300
-  strategy: round-robin
-  proxies:
-    - vless-reality-vision-racknerd-21de492                              
-    - vmess-ws-racknerd-21de492
-    - hysteria2-racknerd-21de492
-    - tuic5-racknerd-21de492
-    - vless-reality-vision-ser689214569345
-    - vmess-ws-ser689214569345
-    - hysteria2-ser689214569345
-    - tuic5-ser689214569345
-    - vless-reality-vision-VM99429
-    - vmess-ws-VM99429
-    - hysteria2-VM99429
-    - tuic5-VM99429
-
 - name: 自动选择
   type: url-test
   url: https://www.gstatic.com/generate_204
