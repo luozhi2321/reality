@@ -1,286 +1,125 @@
-{
-  "log": {
-    "disabled": false,
-    "level": "info",
-    "timestamp": true
-  },
-  "experimental": {
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "external_ui": "ui",
-      "external_ui_download_url": "",
-      "external_ui_download_detour": "",
-      "secret": "",
-      "default_mode": "Rule"
-       },
-      "cache_file": {
-            "enabled": true,
-            "path": "cache.db",
-            "store_fakeip": true
-        }
-    },
-    "dns": {
-        "servers": [
-            {
-                "tag": "proxydns",
-                "address": "tls://8.8.8.8/dns-query",
-                "detour": "select"
-            },
-            {
-                "tag": "localdns",
-                "address": "h3://223.5.5.5/dns-query",
-                "detour": "direct"
-            },
-            {
-                "tag": "dns_fakeip",
-                "address": "fakeip"
-            }
-        ],
-        "rules": [
-            {
-                "outbound": "any",
-                "server": "localdns",
-                "disable_cache": true
-            },
-            {
-                "clash_mode": "Global",
-                "server": "proxydns"
-            },
-            {
-                "clash_mode": "Direct",
-                "server": "localdns"
-            },
-            {
-                "rule_set": "geosite-cn",
-                "server": "localdns"
-            },
-            {
-                 "rule_set": "geosite-geolocation-!cn",
-                 "server": "proxydns"
-            },
-             {
-                "rule_set": "geosite-geolocation-!cn",         
-                "query_type": [
-                    "A",
-                    "AAAA"
-                ],
-                "server": "dns_fakeip"
-            }
-          ],
-           "fakeip": {
-           "enabled": true,
-           "inet4_range": "198.18.0.0/15",
-           "inet6_range": "fc00::/18"
-         },
-          "independent_cache": true,
-          "final": "proxydns"
-        },
-      "inbounds": [
-    {
-      "type": "tun",
-     "tag": "tun-in",
-          "address": [
-      "172.19.0.1/30",
-          "fd00::1/126"
-      ],
-      "auto_route": true,
-      "strict_route": true,
-      "sniff": true,
-      "sniff_override_destination": true,
-      "domain_strategy": "prefer_ipv4"
-    }
-  ],
-  "outbounds": [
-    {
-      "tag": "select",
-      "type": "selector",
-      "default": "auto",
-      "outbounds": [
-        "auto",
-        "vless-racknerd-21de492",
-        "vmess-racknerd-21de492",
-        "hy2-racknerd-21de492",
-        "tuic5-racknerd-21de492"
-      ]
-    },
-    {
-      "type": "vless",
-      "tag": "vless-racknerd-21de492",
-      "server": "107.172.219.105",
-      "server_port": 21076,
-      "uuid": "ad72776b-b9f8-4238-bedb-a94b2a3a33f8",
-      "flow": "xtls-rprx-vision",
-      "tls": {
-        "enabled": true,
-        "server_name": "apple.com",
-        "utls": {
-          "enabled": true,
-          "fingerprint": "chrome"
-        },
-      "reality": {
-          "enabled": true,
-          "public_key": "uJUJACh4CFdpZH3eA9yXmPM_1SLbg3sRQGxNXXhAckc",
-          "short_id": "df6bfd13"
-        }
-      }
-    },
-{
-            "server": "107.172.219.105",
-            "server_port": 2052,
-            "tag": "vmess-racknerd-21de492",
-            "tls": {
-                "enabled": false,
-                "server_name": "www.bing.com",
-                "insecure": false,
-                "utls": {
-                    "enabled": true,
-                    "fingerprint": "chrome"
-                }
-            },
-            "packet_encoding": "packetaddr",
-            "transport": {
-                "headers": {
-                    "Host": [
-                        "www.bing.com"
-                    ]
-                },
-                "path": "ad72776b-b9f8-4238-bedb-a94b2a3a33f8-vm",
-                "type": "ws"
-            },
-            "type": "vmess",
-            "security": "auto",
-            "uuid": "ad72776b-b9f8-4238-bedb-a94b2a3a33f8"
-        },
+port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+unified-delay: true
+global-client-fingerprint: chrome
+dns:
+  enable: false
+  listen: :53
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver: 
+    - 223.5.5.5
+    - 8.8.8.8
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fallback:
+    - https://1.0.0.1/dns-query
+    - tls://dns.google
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+      - 240.0.0.0/4
 
-    {
-        "type": "hysteria2",
-        "tag": "hy2-racknerd-21de492",
-        "server": "107.172.219.105",
-        "server_port": 21828,
-        "password": "ad72776b-b9f8-4238-bedb-a94b2a3a33f8",
-        "tls": {
-            "enabled": true,
-            "server_name": "www.bing.com",
-            "insecure": true,
-            "alpn": [
-                "h3"
-            ]
-        }
-    },
-        {
-            "type":"tuic",
-            "tag": "tuic5-racknerd-21de492",
-            "server": "107.172.219.105",
-            "server_port": 32452,
-            "uuid": "ad72776b-b9f8-4238-bedb-a94b2a3a33f8",
-            "password": "ad72776b-b9f8-4238-bedb-a94b2a3a33f8",
-            "congestion_control": "bbr",
-            "udp_relay_mode": "native",
-            "udp_over_stream": false,
-            "zero_rtt_handshake": false,
-            "heartbeat": "10s",
-            "tls":{
-                "enabled": true,
-                "server_name": "www.bing.com",
-                "insecure": true,
-                "alpn": [
-                    "h3"
-                ]
-            }
-        },
-    {
-      "tag": "direct",
-      "type": "direct"
-    },
-    {
-      "tag": "auto",
-      "type": "urltest",
-      "outbounds": [
-        "vless-racknerd-21de492",
-        "vmess-racknerd-21de492",
-        "hy2-racknerd-21de492",
-        "tuic5-racknerd-21de492"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1m",
-      "tolerance": 50,
-      "interrupt_exist_connections": false
-    }
-  ],
-  "route": {
-      "rule_set": [
-            {
-                "tag": "geosite-geolocation-!cn",
-                "type": "remote",
-                "format": "binary",
-                "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
-                "download_detour": "select",
-                "update_interval": "1d"
-            },
-            {
-                "tag": "geosite-cn",
-                "type": "remote",
-                "format": "binary",
-                "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-cn.srs",
-                "download_detour": "select",
-                "update_interval": "1d"
-            },
-            {
-                "tag": "geoip-cn",
-                "type": "remote",
-                "format": "binary",
-                "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
-                "download_detour": "select",
-                "update_interval": "1d"
-            }
-        ],
-    "auto_detect_interface": true,
-    "final": "select",
-    "rules": [
-      {
-      "inbound": "tun-in",
-      "action": "sniff"
-      },
-      {
-      "protocol": "dns",
-      "action": "hijack-dns"
-      },
-      {
-      "port": 443,
-      "network": "udp",
-      "action": "reject"
-      },
-      {
-        "clash_mode": "Direct",
-        "outbound": "direct"
-      },
-      {
-        "clash_mode": "Global",
-        "outbound": "select"
-      },
-      {
-        "rule_set": "geoip-cn",
-        "outbound": "direct"
-      },
-      {
-        "rule_set": "geosite-cn",
-        "outbound": "direct"
-      },
-      {
-      "ip_is_private": true,
-      "outbound": "direct"
-      },
-      {
-        "rule_set": "geosite-geolocation-!cn",
-        "outbound": "select"
-      }
-    ]
-  },
-    "ntp": {
-    "enabled": true,
-    "server": "time.apple.com",
-    "server_port": 123,
-    "interval": "30m",
-    "detour": "direct"
-  }
-}
+proxies:
+- name: vless-reality-vision-racknerd-21de492               
+  type: vless
+  server: 107.172.219.105                           
+  port: 21076                                
+  uuid: ad72776b-b9f8-4238-bedb-a94b2a3a33f8   
+  network: tcp
+  udp: true
+  tls: true
+  flow: xtls-rprx-vision
+  servername: apple.com                 
+  reality-opts: 
+    public-key: uJUJACh4CFdpZH3eA9yXmPM_1SLbg3sRQGxNXXhAckc    
+    short-id: df6bfd13                    
+  client-fingerprint: chrome                  
+
+- name: vmess-ws-racknerd-21de492                         
+  type: vmess
+  server: 107.172.219.105                        
+  port: 2052                                     
+  uuid: ad72776b-b9f8-4238-bedb-a94b2a3a33f8       
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: false
+  network: ws
+  servername: www.bing.com                    
+  ws-opts:
+    path: "ad72776b-b9f8-4238-bedb-a94b2a3a33f8-vm"                             
+    headers:
+      Host: www.bing.com                     
+
+
+
+
+
+- name: hysteria2-racknerd-21de492                            
+  type: hysteria2                                      
+  server: 107.172.219.105                               
+  port: 21828                                
+  password: ad72776b-b9f8-4238-bedb-a94b2a3a33f8                          
+  alpn:
+    - h3
+  sni: www.bing.com                               
+  skip-cert-verify: true
+  fast-open: true
+
+- name: tuic5-racknerd-21de492                            
+  server: 107.172.219.105                      
+  port: 32452                                    
+  type: tuic
+  uuid: ad72776b-b9f8-4238-bedb-a94b2a3a33f8       
+  password: ad72776b-b9f8-4238-bedb-a94b2a3a33f8   
+  alpn: [h3]
+  disable-sni: true
+  reduce-rtt: true
+  udp-relay-mode: native
+  congestion-controller: bbr
+  sni: www.bing.com                                
+  skip-cert-verify: true
+
+proxy-groups:
+- name: 负载均衡
+  type: load-balance
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  strategy: round-robin
+  proxies:
+    - vless-reality-vision-racknerd-21de492                              
+    - vmess-ws-racknerd-21de492
+    - hysteria2-racknerd-21de492
+    - tuic5-racknerd-21de492
+
+- name: 自动选择
+  type: url-test
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  proxies:
+    - vless-reality-vision-racknerd-21de492                              
+    - vmess-ws-racknerd-21de492
+    - hysteria2-racknerd-21de492
+    - tuic5-racknerd-21de492
+    
+- name: 🌍选择代理节点
+  type: select
+  proxies:
+    - 负载均衡                                         
+    - 自动选择
+    - DIRECT
+    - vless-reality-vision-racknerd-21de492                              
+    - vmess-ws-racknerd-21de492
+    - hysteria2-racknerd-21de492
+    - tuic5-racknerd-21de492
+rules:
+  - GEOIP,LAN,DIRECT
+  - GEOIP,CN,DIRECT
+  - MATCH,🌍选择代理节点
