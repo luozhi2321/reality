@@ -3,7 +3,7 @@
 # 跑裸核用户请自行去掉下方控制面板模块的注释。
 # 机场订阅
 proxy-providers:
-  Airport1:
+  HK:
     url: "https://raw.githubusercontent.com/luozhi2321/reality/refs/heads/main/HK.yaml"
     type: http
     interval: 86400
@@ -13,7 +13,7 @@ proxy-providers:
       interval: 300
     proxy: 直连
 
-  Airport2:
+  US:
     url: "https://raw.githubusercontent.com/luozhi2321/reality/refs/heads/main/US.yaml"
     type: http
     interval: 86400
