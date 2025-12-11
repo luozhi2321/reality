@@ -32,6 +32,17 @@ proxy-providers:
       interval: 300
     proxy: 直连
 
+  sf:
+    url: "https://sf.luozhi.site/sub?token=4e716b5130544927e9233eb72a275dfa"
+    type: http
+    interval: 86400
+    health-check:
+      enable: true
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+    proxy: 直连
+
+    
 
 # 节点信息
 proxies:
