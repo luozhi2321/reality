@@ -29,23 +29,23 @@ proxies:
 - name: vless-reality-vision-racknerd-21de492               
   type: vless
   server: 107.172.219.105                           
-  port: 21076                                
-  uuid: ad72776b-b9f8-4238-bedb-a94b2a3a33f8   
+  port: 51876                                
+  uuid: fe5bfaee-774f-4eaa-b11e-ab427a2c5801   
   network: tcp
   udp: true
   tls: true
   flow: xtls-rprx-vision
   servername: apple.com                 
   reality-opts: 
-    public-key: uJUJACh4CFdpZH3eA9yXmPM_1SLbg3sRQGxNXXhAckc    
-    short-id: df6bfd13                    
+    public-key: f-fLA0thcGrwoVVjKLBLQ4YtSBAM-XTD-G6foeGG5h4    
+    short-id: 7a3d9852                    
   client-fingerprint: chrome                  
 
 - name: vmess-ws-racknerd-21de492                         
   type: vmess
   server: 107.172.219.105                        
-  port: 2052                                     
-  uuid: ad72776b-b9f8-4238-bedb-a94b2a3a33f8       
+  port: 8080                                     
+  uuid: fe5bfaee-774f-4eaa-b11e-ab427a2c5801       
   alterId: 0
   cipher: auto
   udp: true
@@ -53,7 +53,7 @@ proxies:
   network: ws
   servername: www.bing.com                    
   ws-opts:
-    path: "ad72776b-b9f8-4238-bedb-a94b2a3a33f8-vm"                             
+    path: "fe5bfaee-774f-4eaa-b11e-ab427a2c5801-vm"                             
     headers:
       Host: www.bing.com                     
 
@@ -64,8 +64,8 @@ proxies:
 - name: hysteria2-racknerd-21de492                            
   type: hysteria2                                      
   server: 107.172.219.105                               
-  port: 21828                                
-  password: ad72776b-b9f8-4238-bedb-a94b2a3a33f8                          
+  port: 10513                                
+  password: fe5bfaee-774f-4eaa-b11e-ab427a2c5801                          
   alpn:
     - h3
   sni: www.bing.com                               
@@ -74,10 +74,10 @@ proxies:
 
 - name: tuic5-racknerd-21de492                            
   server: 107.172.219.105                      
-  port: 32452                                    
+  port: 57789                                    
   type: tuic
-  uuid: ad72776b-b9f8-4238-bedb-a94b2a3a33f8       
-  password: ad72776b-b9f8-4238-bedb-a94b2a3a33f8   
+  uuid: fe5bfaee-774f-4eaa-b11e-ab427a2c5801       
+  password: fe5bfaee-774f-4eaa-b11e-ab427a2c5801   
   alpn: [h3]
   disable-sni: true
   reduce-rtt: true
