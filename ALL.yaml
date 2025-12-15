@@ -23,7 +23,7 @@ proxy-providers:
       interval: 300
     proxy: 直连
   subs:
-    url: "https://gist.githubusercontent.com/luozhi2321/c5e022abffc4634592928e3c8e57e180/raw/mihomo.yaml"
+    url: "https://subs.luozhi.site/api/file/mihomo"
     type: http
     interval: 86400
     health-check:
