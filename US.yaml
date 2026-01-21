@@ -26,6 +26,66 @@ dns:
       - 240.0.0.0/4
 
 proxies:
+- name: vless-reality-vision-US-ECS553388742129               
+  type: vless
+  server: 107.173.106.251                           
+  port: 10091                                
+  uuid: b9eb0e78-54a6-480d-a53b-39c3f60891bb   
+  network: tcp
+  udp: true
+  tls: true
+  flow: xtls-rprx-vision
+  servername: apple.com                 
+  reality-opts: 
+    public-key: V0gxCed5rDYRLtmAL7jECMT5idhhb34cx2MWYSNl5EA    
+    short-id: c04d508c                    
+  client-fingerprint: chrome                  
+
+- name: vmess-ws-US-ECS553388742129                         
+  type: vmess
+  server: 107.173.106.251                        
+  port: 8080                                     
+  uuid: b9eb0e78-54a6-480d-a53b-39c3f60891bb       
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: false
+  network: ws
+  servername: www.bing.com                    
+  ws-opts:
+    path: "b9eb0e78-54a6-480d-a53b-39c3f60891bb-vm"                             
+    headers:
+      Host: www.bing.com                     
+
+
+
+
+
+- name: hysteria2-US-ECS553388742129                            
+  type: hysteria2                                      
+  server: 107.173.106.251                               
+  port: 13899                                
+  password: b9eb0e78-54a6-480d-a53b-39c3f60891bb                          
+  alpn:
+    - h3
+  sni: www.bing.com                               
+  skip-cert-verify: true
+  fast-open: true
+
+- name: tuic5-US-ECS553388742129                            
+  server: 107.173.106.251                      
+  port: 16200                                    
+  type: tuic
+  uuid: b9eb0e78-54a6-480d-a53b-39c3f60891bb       
+  password: b9eb0e78-54a6-480d-a53b-39c3f60891bb   
+  alpn: [h3]
+  disable-sni: true
+  reduce-rtt: true
+  udp-relay-mode: native
+  congestion-controller: bbr
+  sni: www.bing.com                                
+  skip-cert-verify: true
+
 - name: vless-reality-vision-racknerd-21de492               
   type: vless
   server: 107.172.219.105                           
