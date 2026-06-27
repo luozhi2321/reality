@@ -57,7 +57,37 @@ proxies:
     headers:
       Host: www.bing.com                     
 
+- name: US-vmess-tls-argo临时-ECS553388742129                         
+  type: vmess
+  server: www.visa.com.sg                        
+  port: 8443                                     
+  uuid: b9eb0e78-54a6-480d-a53b-39c3f60891bb       
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  network: ws
+  servername: loading-wiki-nancy-marker.trycloudflare.com                    
+  ws-opts:
+    path: "b9eb0e78-54a6-480d-a53b-39c3f60891bb-vm"                             
+    headers:
+      Host: loading-wiki-nancy-marker.trycloudflare.com
 
+- name: US-vmess-argo临时-ECS553388742129                         
+  type: vmess
+  server: www.visa.com.sg                        
+  port: 8880                                     
+  uuid: b9eb0e78-54a6-480d-a53b-39c3f60891bb       
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: false
+  network: ws
+  servername: loading-wiki-nancy-marker.trycloudflare.com                    
+  ws-opts:
+    path: "b9eb0e78-54a6-480d-a53b-39c3f60891bb-vm"                             
+    headers:
+      Host: loading-wiki-nancy-marker.trycloudflare.com 
 
 
 
