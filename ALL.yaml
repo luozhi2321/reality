@@ -33,8 +33,8 @@ proxy-providers:
       interval: 300
     proxy: 直连
     
-  subs:
-    url: "https://subs.luozhi.site/api/file/mihomo"
+  vercel2321.vercel:
+    url: "https://iglr5skoc102pdy1jta-5kkm.911402.workers.dev/YTuAkh_LgJCWymE/sub/normal?app=clash#%F0%9F%92%A6%20BPB%20Normal"
     type: http
     interval: 86400
     health-check:
