@@ -24,7 +24,7 @@ proxy-providers:
     proxy: 直连
    
   US2:
-    url: "https://us.luozhi.site:2283/hui/luozhi.lz442553"
+    url: "http://107.173.106.251:46171/442553/clmi.yaml"
     type: http
     interval: 86400
     health-check:
