@@ -11,8 +11,8 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   default-nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
+    - 211.136.192.6
+    - 120.196.165.24
   nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
@@ -266,34 +266,6 @@ proxies:
     type: vless
     server: 43.174.192.1
     port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: CN [优选高速 965.11ms]
-    type: vless
-    server: 43.129.217.38
-    port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: CN [优选高速 1022.85ms]
-    type: vless
-    server: 109.66.88.118
-    port: 8443
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
     network: ws
     servername: sf.luozhi.site
