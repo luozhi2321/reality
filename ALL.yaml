@@ -3,8 +3,8 @@
 # 跑裸核用户请自行去掉下方控制面板模块的注释。
 # 机场订阅
 proxy-providers:
-  HK:
-    url: "https://raw.githubusercontent.com/luozhi2321/reality/refs/heads/main/HK.yaml"
+  DIY:
+    url: "https://raw.githubusercontent.com/luozhi2321/reality/refs/heads/main/DIY.yaml"
     type: http
     interval: 86400
     health-check:
