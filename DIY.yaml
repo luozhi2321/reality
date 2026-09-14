@@ -23,7 +23,7 @@
 # 机场订阅
 proxy-providers:
   Airport1:
-    url: "https://raw.githubusercontent.com/luozhi2321/reality/refs/heads/main/v13-1.yaml"
+    url: "节点订阅"
     type: http
     interval: 0
     health-check:
@@ -34,7 +34,557 @@ proxy-providers:
 
 # 节点信息
 proxies:
-  - {name: 直连, type: direct}
+  - name: JP-vl-reality-server
+    type: vless
+    server: 103.27.187.59
+    port: 34430
+    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    servername: apple.com
+    tls: true
+    flow: xtls-rprx-vision
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: PMvxrXZ4pBWdn73U3npElHPi4EXA61dI9FnawgOE3BY
+      short-id: 190ecfd6
+    skip-cert-verify: true
+    udp: true
+  - name: JP-vm-argo-server
+    type: vmess
+    server: 103.97.200.42
+    port: 443
+    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    alterId: 0
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: images-nirvana-products-actively.trycloudflare.com
+    network: ws
+    ws-opts:
+      path: 6c160d39-9de1-48ce-9d94-7ad8d56a574f-vm
+      headers:
+        Host: images-nirvana-products-actively.trycloudflare.com
+    udp: true
+  - name: JP-vm-ws-server
+    type: vmess
+    server: 103.27.187.59
+    port: 2082
+    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    alterId: 0
+    cipher: auto
+    tls: false
+    skip-cert-verify: true
+    network: ws
+    ws-opts:
+      path: 6c160d39-9de1-48ce-9d94-7ad8d56a574f-vm
+      headers:
+        Host: www.bing.com
+    udp: true
+  - name: JP-hy2-server
+    type: hysteria2
+    server: 103.27.187.59
+    port: 31861
+    password: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    sni: www.bing.com
+    skip-cert-verify: true
+    alpn:
+      - h3
+    udp: true
+  - name: JP-tu5-server
+    type: tuic
+    server: 103.27.187.59
+    port: 50487
+    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    password: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    sni: www.bing.com
+    alpn:
+      - h3
+    congestion-controller: bbr
+    skip-cert-verify: true
+    disable-sni: false
+    udp: true
+  - name: Vercel-SG-Amazon.com
+    type: vless
+    server: 103.72.62.113
+    port: 443
+    uuid: d1cf4b9c-3e57-085d-b34a-797fcf601381
+    network: ws
+    servername: vercel.luozhi.qzz.io
+    tls: true
+    client-fingerprint: chrome
+    ws-opts:
+      path: /d1cf4b9c
+      headers:
+        Host: vercel.luozhi.qzz.io
+    skip-cert-verify: true
+    udp: true
+  - name: Vercel-SG-Amazon.com-TJ
+    type: trojan
+    server: 104.64.192.116
+    port: 443
+    password: d1cf4b9c-3e57-085d-b34a-797fcf601381
+    sni: vercel.luozhi.qzz.io
+    skip-cert-verify: true
+    ws-opts:
+      path: /d1cf4b9c
+      headers:
+        Host: vercel.luozhi.qzz.io
+    udp: true
+  - name: US-vm-argo-ECS553388742129
+    type: vmess
+    server: 103.171.34.48
+    port: 443
+    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
+    alterId: 0
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: twiki-scholars-drinks-coffee.trycloudflare.com
+    network: ws
+    ws-opts:
+      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
+      headers:
+        Host: twiki-scholars-drinks-coffee.trycloudflare.com
+    udp: true
+  - name: US-vm-argo-ECS553388742129-1
+    type: vmess
+    server: 103.97.200.42
+    port: 443
+    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
+    alterId: 0
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: twiki-scholars-drinks-coffee.trycloudflare.com
+    network: ws
+    ws-opts:
+      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
+      headers:
+        Host: twiki-scholars-drinks-coffee.trycloudflare.com
+    udp: true
+  - name: US-vm-argo-ECS553388742129-2
+    type: vmess
+    server: 103.72.62.113
+    port: 443
+    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
+    alterId: 0
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: twiki-scholars-drinks-coffee.trycloudflare.com
+    network: ws
+    ws-opts:
+      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
+      headers:
+        Host: twiki-scholars-drinks-coffee.trycloudflare.com
+    udp: true
+  - name: US-vm-argo-ECS553388742129-3
+    type: vmess
+    server: 157.20.27.35
+    port: 443
+    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
+    alterId: 0
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: twiki-scholars-drinks-coffee.trycloudflare.com
+    network: ws
+    ws-opts:
+      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
+      headers:
+        Host: twiki-scholars-drinks-coffee.trycloudflare.com
+    udp: true
+  - name: SG [优选高速 77.7ms]
+    type: vless
+    server: 143.198.211.180
+    port: 443
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: SG [优选高速 78.83ms]
+    type: vless
+    server: 143.198.209.123
+    port: 443
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: SG [优选高速 97.77ms]
+    type: vless
+    server: 104.64.192.116
+    port: 443
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: SG [优选高速 215.65ms]
+    type: vless
+    server: 104.248.159.171
+    port: 443
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: TW [优选高速 522.8ms]
+    type: vless
+    server: 114.32.9.249
+    port: 443
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: HK 移动优选[25ms]
+    type: vless
+    server: 104.18.33.45
+    port: 2083
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: HK 移动优选[30ms]
+    type: vless
+    server: 104.26.10.36
+    port: 8443
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: HK 移动优选[30ms]_1
+    type: vless
+    server: 104.19.35.142
+    port: 2087
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: HK 移动优选[41ms]
+    type: vless
+    server: 104.16.252.138
+    port: 2083
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: HK 移动优选[71ms]
+    type: vless
+    server: 104.17.150.152
+    port: 2087
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: HK 移动优选[74ms]
+    type: vless
+    server: 172.66.1.40
+    port: 443
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: US 移动优选[172ms]
+    type: vless
+    server: 188.164.248.44
+    port: 2053
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: US 移动优选[176ms]
+    type: vless
+    server: 104.26.7.56
+    port: 443
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: US 移动优选[178ms]
+    type: vless
+    server: 172.67.77.215
+    port: 2083
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    network: ws
+    servername: edt.luozhi.dpdns.org
+    tls: true
+    ws-opts:
+      path: /
+      headers:
+        Host: edt.luozhi.dpdns.org
+    skip-cert-verify: true
+    udp: true
+  - name: BR [优选高速 922.17ms]
+    type: vless
+    server: 43.174.192.1
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: HK [优选高速 49.67ms]
+    type: vless
+    server: 143.20.156.163
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: HK [优选高速 66.77ms]
+    type: vless
+    server: 143.14.189.170
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: HK [优选高速 355.01ms]
+    type: vless
+    server: 103.97.200.42
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: ID [优选高速 976.17ms]
+    type: vless
+    server: 172.232.246.133
+    port: 8443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: JP [优选高速 164.85ms]
+    type: vless
+    server: 132.226.10.72
+    port: 2083
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: MO [优选高速 670.12ms]
+    type: vless
+    server: 45.202.247.198
+    port: 8443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: MO [优选高速 2152.73ms]
+    type: vless
+    server: 178.253.32.76
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: MY [优选高速 980.45ms]
+    type: vless
+    server: 172.197.160.176
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: SG [优选高速 77.7ms]_1
+    type: vless
+    server: 143.198.211.180
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: SG [优选高速 78.83ms]_1
+    type: vless
+    server: 143.198.209.123
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: SG [优选高速 97.77ms]_1
+    type: vless
+    server: 104.64.192.116
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: SG [优选高速 215.65ms]_1
+    type: vless
+    server: 104.248.159.171
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
+  - name: TW [优选高速 522.8ms]_1
+    type: vless
+    server: 114.32.9.249
+    port: 443
+    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
+    network: ws
+    servername: sf.luozhi.site
+    tls: true
+    ws-opts:
+      path: /?ed=2560
+      headers:
+        Host: sf.luozhi.site
+    skip-cert-verify: true
+    udp: true
 
 # 全局配置 
 mixed-port: 7890
