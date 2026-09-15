@@ -1,43 +1,39 @@
-mixed-port: 7890
-allow-lan: false
-mode: rule
-log-level: info
-ipv6: false
-external-controller: 127.0.0.1:9090
-dns:
-  enable: true
-  listen: 127.0.0.1:1053
-  ipv6: false
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-  default-nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
-  nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
-  proxy-server-nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
-  nameserver-policy:
-    geosite:geolocation-!cn:
-      - https://1.1.1.1/dns-query#🚀 节点选择
-      - https://8.8.8.8/dns-query#🚀 节点选择
+# 必读！！！
+# 本文件为通用 DNS 防泄漏版本，dns/rules/proxy-groups 部分只用内核
+# （mihomo/clash-meta）级别的通用字段，OpenClash、Clash Party、
+# Clash Verge 等客户端均可直接使用。
+#
+# 但请注意：DNS 泄露有一半原因不是配置文件能解决的——
+# 1) OpenClash（路由器/软路由）：若你没有在插件设置里打开"TUN 模式"，
+#    这份文件里的 tun: 整段根本不会生效，DNS 是走 OpenClash 自己的
+#    dnsmasq + fake-ip 逻辑处理的，请去插件的"模式设置"确认已选
+#    Fake-IP（增强）模式、并开启"DNS 劫持"选项。
+# 2) Windows 桌面端（Clash Party / Verge 等）：即使开了 TUN 且劫持了
+#    53 端口，Windows 系统本身的"智能多宿主名称解析"仍会同时向物理
+#    网卡和 Clash 虚拟网卡各发一份 DNS 请求，物理网卡那份会直接泄露，
+#    这是本地专业版 Windows 里最常见的"配置正确但仍然检测出泄露"的
+#    真正原因，必须手动关闭（gpedit.msc → 计算机配置 → 管理模板 →
+#    网络 → DNS 客户端 → 关闭"智能多宿主名称解析"→已启用；家庭版无
+#    组策略，需改注册表，网上有很多教程）。
+# 3) 如果系统开启了 IPv6 而这份配置里 dns/tun 都是 ipv6:false，AAAA
+#    查询可能不会被劫持而直接从物理网卡泄露，最简单的办法是在系统
+#    网络适配器里直接禁用 IPv6（不需要就不用留着）。
+# 若你的设备使用了 Docker/虚拟网卡/Zerotier/Tailscale 等，请检查下方
+# route-exclude-address 与 exclude-interface 是否需要按自己网段调整。
+# 机场订阅
+proxy-providers:
+  Airport1:
+    url: "https://"
+    type: http
+    interval: 0
+    health-check:
+      enable: true
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+    proxy: 直连
+
+# 节点信息
 proxies:
-  - name: JP-vl-reality-server
-    type: vless
-    server: 103.27.187.59
-    port: 34430
-    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
-    servername: apple.com
-    tls: true
-    flow: xtls-rprx-vision
-    client-fingerprint: chrome
-    reality-opts:
-      public-key: PMvxrXZ4pBWdn73U3npElHPi4EXA61dI9FnawgOE3BY
-      short-id: 190ecfd6
-    skip-cert-verify: true
-    udp: true
   - name: JP-hy2-server
     type: hysteria2
     server: 103.27.187.59
@@ -45,6 +41,51 @@ proxies:
     password: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
     sni: www.bing.com
     skip-cert-verify: true
+    alpn:
+      - h3
+  - name: JP-tu5-server
+    type: tuic
+    server: 103.27.187.59
+    port: 50487
+    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    password: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    congestion-controller: bbr
+    skip-cert-verify: true
+    alpn:
+      - h3
+    sni: www.bing.com
+    udp-relay-mode: native
+  - name: JP-vl-reality-server
+    type: vless
+    server: 103.27.187.59
+    port: 34430
+    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    tls: true
+    client-fingerprint: chrome
+    servername: apple.com
+    network: tcp
+    reality-opts:
+      public-key: PMvxrXZ4pBWdn73U3npElHPi4EXA61dI9FnawgOE3BY
+      short-id: 190ecfd6
+    tfo: false
+    skip-cert-verify: false
+    udp: true
+    flow: xtls-rprx-vision
+  - name: JP-vm-argo-server
+    type: vmess
+    server: 23.27.169.196
+    port: 443
+    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
+    alterId: 0
+    cipher: auto
+    tls: true
+    servername: images-nirvana-products-actively.trycloudflare.com
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: 6c160d39-9de1-48ce-9d94-7ad8d56a574f-vm
+      headers:
+        host: images-nirvana-products-actively.trycloudflare.com
     udp: true
   - name: JP-vm-ws-server
     type: vmess
@@ -54,1007 +95,151 @@ proxies:
     alterId: 0
     cipher: auto
     tls: false
-    skip-cert-verify: true
+    servername: ''
+    skip-cert-verify: false
     network: ws
     ws-opts:
       path: 6c160d39-9de1-48ce-9d94-7ad8d56a574f-vm
       headers:
-        Host: www.bing.com
-    udp: true
-  - name: JP-tu5-server
-    type: tuic
-    server: 103.27.187.59
-    port: 50487
-    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
-    password: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
-    sni: www.bing.com
-    alpn:
-      - h3
-    congestion-controller: bbr
-    skip-cert-verify: true
-    disable-sni: false
-    udp: true
-  - name: JP-anytls-server
-    type: anytls
-    server: 103.27.187.59
-    port: 13945
-    password: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
-    sni: www.bing.com
-    skip-cert-verify: true
-    tls: true
-    udp: true
-  - name: JP-vm-argo-server
-    type: vmess
-    server: 104.26.8.188
-    port: 443
-    uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
-    alterId: 0
-    cipher: auto
-    tls: true
-    skip-cert-verify: true
-    servername: images-nirvana-products-actively.trycloudflare.com
-    network: ws
-    ws-opts:
-      path: 6c160d39-9de1-48ce-9d94-7ad8d56a574f-vm
-      headers:
-        Host: images-nirvana-products-actively.trycloudflare.com
-    udp: true
-  - name: vm-argo-ECS553388742129-HK
-    type: vmess
-    server: 104.26.8.188
-    port: 443
-    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
-    alterId: 0
-    cipher: auto
-    tls: true
-    skip-cert-verify: true
-    servername: twiki-scholars-drinks-coffee.trycloudflare.com
-    network: ws
-    ws-opts:
-      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
-      headers:
-        Host: twiki-scholars-drinks-coffee.trycloudflare.com
-    udp: true
-  - name: vm-argo-ECS553388742129-US-1
-    type: vmess
-    server: 45.143.130.165
-    port: 443
-    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
-    alterId: 0
-    cipher: auto
-    tls: true
-    skip-cert-verify: true
-    servername: twiki-scholars-drinks-coffee.trycloudflare.com
-    network: ws
-    ws-opts:
-      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
-      headers:
-        Host: twiki-scholars-drinks-coffee.trycloudflare.com
-    udp: true
-  - name: vm-argo-ECS553388742129-US-2
-    type: vmess
-    server: 77.73.8.231
-    port: 443
-    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
-    alterId: 0
-    cipher: auto
-    tls: true
-    skip-cert-verify: true
-    servername: twiki-scholars-drinks-coffee.trycloudflare.com
-    network: ws
-    ws-opts:
-      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
-      headers:
-        Host: twiki-scholars-drinks-coffee.trycloudflare.com
-    udp: true
-  - name: vm-argo-ECS553388742129-US-3
-    type: vmess
-    server: 77.73.8.226
-    port: 443
-    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
-    alterId: 0
-    cipher: auto
-    tls: true
-    skip-cert-verify: true
-    servername: twiki-scholars-drinks-coffee.trycloudflare.com
-    network: ws
-    ws-opts:
-      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
-      headers:
-        Host: twiki-scholars-drinks-coffee.trycloudflare.com
+        host: www.bing.com
     udp: true
   - name: Vercel-SG-Amazon.com
     type: vless
-    server: 152.42.229.215
+    server: 104.64.192.116
     port: 443
     uuid: d1cf4b9c-3e57-085d-b34a-797fcf601381
-    network: ws
+    tls: true
     servername: vercel.luozhi.qzz.io
-    tls: true
-    client-fingerprint: chrome
+    network: ws
     ws-opts:
       path: /d1cf4b9c
       headers:
-        Host: vercel.luozhi.qzz.io
-    skip-cert-verify: true
+        host: vercel.luozhi.qzz.io
+    tfo: false
+    skip-cert-verify: false
     udp: true
-  - name: Vercel-SG-Amazon.com_1
+  - name: Vercel-SG-Amazon.com-1
+    type: vless
+    server: 103.3.61.43
+    port: 443
+    uuid: d1cf4b9c-3e57-085d-b34a-797fcf601381
+    tls: true
+    servername: vercel.luozhi.qzz.io
+    network: ws
+    ws-opts:
+      path: /d1cf4b9c
+      headers:
+        host: vercel.luozhi.qzz.io
+    tfo: false
+    skip-cert-verify: false
+    udp: true
+  - name: Vercel-SG-Amazon.com-TJ
     type: trojan
-    server: 159.223.33.4
+    server: 104.64.192.116
     port: 443
     password: d1cf4b9c-3e57-085d-b34a-797fcf601381
+    tls: true
     sni: vercel.luozhi.qzz.io
-    skip-cert-verify: true
+    network: ws
     ws-opts:
       path: /d1cf4b9c
       headers:
-        Host: vercel.luozhi.qzz.io
+        host: vercel.luozhi.qzz.io
+    tfo: false
+    skip-cert-verify: false
     udp: true
-  - name: Vercel-SG-Amazon.com_2
-    type: ss
-    server: 157.230.243.63
+  - name: Vercel-SG-Amazon.com-TJ-1
+    type: trojan
+    server: 104.248.158.76
     port: 443
-    cipher: none
     password: d1cf4b9c-3e57-085d-b34a-797fcf601381
-    plugin: v2ray-plugin
-    plugin-opts:
-      mode: websocket
-      host: vercel.luozhi.qzz.io
+    tls: true
+    sni: vercel.luozhi.qzz.io
+    network: ws
+    ws-opts:
       path: /d1cf4b9c
-    skip-cert-verify: true
-    udp: true
-  - name: HK 移动优选[25ms]162.159.198.1:8443#▼ 精选域名 迷你版 | 优选网BestCF.pages.dev
-    type: vless
-    server: 104.18.33.45
-    port: 2083
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
       headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
+        host: vercel.luozhi.qzz.io
+    tfo: false
+    skip-cert-verify: false
     udp: true
-  - name: HK [优选高速 54.95ms 15.89Mbps]
-    type: vless
-    server: 185.92.47.93
+  - name: US-vm-argo-ECS553388742129-1
+    type: vmess
+    server: 103.97.200.42
     port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
+    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
+    alterId: 0
+    cipher: auto
     tls: true
+    servername: twiki-scholars-drinks-coffee.trycloudflare.com
+    skip-cert-verify: false
+    network: ws
     ws-opts:
-      path: /
+      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
       headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
+        host: twiki-scholars-drinks-coffee.trycloudflare.com
     udp: true
-  - name: HK [优选高速 60.92ms 16.2Mbps]
-    type: vless
-    server: 2.27.109.35
+  - name: US-vm-argo-ECS553388742129-2
+    type: vmess
+    server: 103.170.217.60
     port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
+    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
+    alterId: 0
+    cipher: auto
     tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 62.42ms 19.48Mbps]
-    type: vless
-    server: 43.133.237.158
-    port: 8443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    servername: twiki-scholars-drinks-coffee.trycloudflare.com
+    skip-cert-verify: false
     network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
     ws-opts:
-      path: /
+      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
       headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
+        host: twiki-scholars-drinks-coffee.trycloudflare.com
     udp: true
-  - name: HK [优选高速 64.69ms 15.92Mbps]
-    type: vless
-    server: 195.58.144.77
+  - name: US-vm-argo-ECS553388742129-tw
+    type: vmess
+    server: 142.249.60.51
     port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
+    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
+    alterId: 0
+    cipher: auto
     tls: true
+    servername: twiki-scholars-drinks-coffee.trycloudflare.com
+    skip-cert-verify: false
+    network: ws
     ws-opts:
-      path: /
+      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
       headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
+        host: twiki-scholars-drinks-coffee.trycloudflare.com
     udp: true
-  - name: JP [优选高速 68.47ms 16.88Mbps]
-    type: vless
-    server: 43.167.9.109
+  - name: US-vm-argo-ECS553388742129-US
+    type: vmess
+    server: 104.18.39.181
     port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
+    uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
+    alterId: 0
+    cipher: auto
     tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 70.17ms 19.24Mbps]
-    type: vless
-    server: 54.180.141.246
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    servername: twiki-scholars-drinks-coffee.trycloudflare.com
+    skip-cert-verify: false
     network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
     ws-opts:
-      path: /
+      path: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42-vm
       headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: JP [优选高速 73.99ms 13.67Mbps]
-    type: vless
-    server: 43.167.246.133
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 76.6ms 19.5Mbps]
-    type: vless
-    server: 119.28.162.39
-    port: 8443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: MO [优选高速 76.65ms 14.88Mbps]
-    type: vless
-    server: 45.202.246.91
-    port: 8443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: JP [优选高速 82.86ms 14.0Mbps]
-    type: vless
-    server: 2.27.134.42
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: JP [优选高速 83.52ms 13.82Mbps]
-    type: vless
-    server: 18.180.86.39
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: JP [优选高速 83.56ms 15.11Mbps]
-    type: vless
-    server: 82.108.198.121
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: JP [优选高速 83.79ms 10.74Mbps]
-    type: vless
-    server: 156.246.91.88
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: TW [优选高速 83.81ms 15.79Mbps]
-    type: vless
-    server: 188.253.6.249
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: JP [优选高速 83.86ms 10.93Mbps]
-    type: vless
-    server: 178.214.214.53
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: VN [优选高速 86.16ms 14.23Mbps]
-    type: vless
-    server: 157.66.26.194
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: SG [优选高速 89.25ms 15.44Mbps]
-    type: vless
-    server: 152.42.229.215
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: SG [优选高速 90.41ms 14.44Mbps]
-    type: vless
-    server: 159.223.33.4
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: SG [优选高速 91.49ms 12.12Mbps]
-    type: vless
-    server: 213.35.105.58
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: SG [优选高速 91.52ms 13.65Mbps]
-    type: vless
-    server: 178.128.82.93
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: SG [优选高速 92.34ms 12.06Mbps]
-    type: vless
-    server: 178.128.86.3
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: SG [优选高速 92.83ms 15.35Mbps]
-    type: vless
-    server: 157.230.243.63
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: SG [优选高速 94.4ms 14.06Mbps]
-    type: vless
-    server: 168.144.109.68
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: TW [优选高速 94.57ms 14.01Mbps]
-    type: vless
-    server: 60.249.101.167
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 112.42ms 11.57Mbps]
-    type: vless
-    server: 168.107.17.234
-    port: 8443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: TW [优选高速 116.99ms 14.08Mbps]
-    type: vless
-    server: 114.32.9.249
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 118.23ms 11.79Mbps]
-    type: vless
-    server: 168.110.121.126
-    port: 8443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: MY [优选高速 118.3ms 12.97Mbps]
-    type: vless
-    server: 198.20.153.87
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 119.89ms 14.97Mbps]
-    type: vless
-    server: 13.124.169.29
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 120.32ms 12.2Mbps]
-    type: vless
-    server: 131.186.26.94
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: IN [优选高速 127.33ms 8.94Mbps]
-    type: vless
-    server: 168.144.68.202
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: TH [优选高速 132.37ms 12.16Mbps]
-    type: vless
-    server: 157.85.105.126
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: MY [优选高速 135.32ms 12.58Mbps]
-    type: vless
-    server: 47.250.212.59
-    port: 2053
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: IN [优选高速 138.77ms 8.69Mbps]
-    type: vless
-    server: 139.84.146.103
-    port: 8443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: MY [优选高速 139.96ms 10.43Mbps]
-    type: vless
-    server: 56.69.45.182
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: IN [优选高速 142.21ms 8.54Mbps]
-    type: vless
-    server: 64.227.146.37
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: TH [优选高速 143.39ms 11.65Mbps]
-    type: vless
-    server: 45.150.128.159
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: IN [优选高速 143.79ms 8.86Mbps]
-    type: vless
-    server: 94.136.185.7
-    port: 8443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: IN [优选高速 145.56ms 10.65Mbps]
-    type: vless
-    server: 64.227.174.213
-    port: 2053
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: IN [优选高速 148.24ms 9.47Mbps]
-    type: vless
-    server: 68.233.109.59
-    port: 2087
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: DE [优选高速 154.92ms 9.76Mbps]
-    type: vless
-    server: 64.118.159.108
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: US [优选高速 157.51ms 8.73Mbps]
-    type: vless
-    server: 45.143.130.165
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: DE [优选高速 161.85ms 9.0Mbps]
-    type: vless
-    server: 45.147.48.93
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: US [优选高速 162.68ms 9.66Mbps]
-    type: vless
-    server: 209.146.114.10
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: DE [优选高速 162.94ms 8.86Mbps]
-    type: vless
-    server: 45.147.48.28
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: US [优选高速 164.49ms 9.03Mbps]
-    type: vless
-    server: 77.73.8.231
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: US [优选高速 164.86ms 8.4Mbps]
-    type: vless
-    server: 77.73.8.226
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: AE [优选高速 169.98ms 8.16Mbps]
-    type: vless
-    server: 95.174.68.155
-    port: 2083
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: AE [优选高速 170.44ms 8.49Mbps]
-    type: vless
-    server: 45.86.228.104
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: VN [优选高速 178.96ms 14.24Mbps]
-    type: vless
-    server: 160.22.74.117
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: TW [优选高速 187.99ms 18.33Mbps]
-    type: vless
-    server: 151.242.189.184
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: VN [优选高速 220.58ms 12.98Mbps]
-    type: vless
-    server: 160.25.74.227
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: VN [优选高速 222.0ms 10.33Mbps]
-    type: vless
-    server: 160.25.74.124
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: VN [优选高速 229.41ms 10.84Mbps]
-    type: vless
-    server: 160.187.1.101
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: VN [优选高速 250.87ms 9.75Mbps]
-    type: vless
-    server: 160.30.50.48
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: MY [优选高速 352.96ms 12.38Mbps]
-    type: vless
-    server: 149.118.144.163
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: ID [优选高速 365.38ms 11.07Mbps]
-    type: vless
-    server: 15.232.155.235
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: TH [优选高速 1121.05ms 9.96Mbps]
-    type: vless
-    server: 103.224.84.70
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
-    udp: true
-  - name: AR [优选高速 1162.02ms 12.46Mbps]
-    type: vless
-    server: 43.174.195.1
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    network: ws
-    servername: edt.luozhi.dpdns.org
-    tls: true
-    ws-opts:
-      path: /
-      headers:
-        Host: edt.luozhi.dpdns.org
-    skip-cert-verify: true
+        host: twiki-scholars-drinks-coffee.trycloudflare.com
     udp: true
   - name: HK-1
     type: vless
     server: 172.66.1.68
     port: 443
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
     tls: true
+    servername: sf.luozhi.site
+    network: ws
     ws-opts:
       path: /?ed=2560
       headers:
-        Host: sf.luozhi.site
+        host: sf.luozhi.site
+    tfo: false
     skip-cert-verify: true
     udp: true
   - name: HK-2
@@ -1062,1026 +247,337 @@ proxies:
     server: 104.25.243.207
     port: 443
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
     tls: true
+    servername: sf.luozhi.site
+    network: ws
     ws-opts:
       path: /?ed=2560
       headers:
-        Host: sf.luozhi.site
+        host: sf.luozhi.site
+    tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK-3
+  - name: VN -> 28.07 Mbps FAST
     type: vless
-    server: 104.21.93.120
+    server: 157.66.26.194
     port: 443
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
     tls: true
+    servername: sf.luozhi.site
+    network: ws
     ws-opts:
       path: /?ed=2560
       headers:
-        Host: sf.luozhi.site
+        host: sf.luozhi.site
+    tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK-4
+  - name: TH -> 17.68 Mbps FAST
     type: vless
-    server: 172.64.146.67
+    server: 45.150.128.159
     port: 443
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
     tls: true
+    servername: sf.luozhi.site
+    network: ws
     ws-opts:
       path: /?ed=2560
       headers:
-        Host: sf.luozhi.site
+        host: sf.luozhi.site
+    tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK-5
+  - name: SG -> 27.01 Mbps FAST
     type: vless
-    server: 172.66.0.102
+    server: 103.170.217.60
     port: 443
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
     tls: true
+    servername: sf.luozhi.site
+    network: ws
     ws-opts:
       path: /?ed=2560
       headers:
-        Host: sf.luozhi.site
+        host: sf.luozhi.site
+    tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK-6
+  - name: SG -> 24.85 Mbps FAST
     type: vless
-    server: 104.21.87.118
+    server: 104.248.158.76
     port: 443
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
     tls: true
+    servername: sf.luozhi.site
+    network: ws
     ws-opts:
       path: /?ed=2560
       headers:
-        Host: sf.luozhi.site
+        host: sf.luozhi.site
+    tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK-7
+  - name: HK 移动优选[25ms]162.159.198.1:8443#▼ 精选域名 迷你版 | 优选网BestCF.pages.dev
     type: vless
-    server: 172.66.3.229
+    server: 104.18.33.45
+    port: 2083
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
+    tls: true
+    servername: edt.luozhi.dpdns.org
+    network: ws
+    ws-opts:
+      path: /
+      headers:
+        host: edt.luozhi.dpdns.org
+    tfo: false
+    skip-cert-verify: true
+    udp: true
+  - name: SG -> 26.9 Mbps FAST
+    type: vless
+    server: 103.3.61.43
     port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
     tls: true
+    servername: edt.luozhi.dpdns.org
+    network: ws
     ws-opts:
-      path: /?ed=2560
+      path: /
       headers:
-        Host: sf.luozhi.site
+        host: edt.luozhi.dpdns.org
+    tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK-8
+  - name: SG -> 23.39 Mbps FAST
     type: vless
-    server: 104.25.254.162
+    server: 104.64.192.116
     port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
     tls: true
+    servername: edt.luozhi.dpdns.org
+    network: ws
     ws-opts:
-      path: /?ed=2560
+      path: /
       headers:
-        Host: sf.luozhi.site
+        host: edt.luozhi.dpdns.org
+    tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK-9
+  - name: MY -> 25.32 Mbps FAST
     type: vless
-    server: 104.21.95.64
+    server: 198.20.153.87
     port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
     tls: true
+    servername: edt.luozhi.dpdns.org
+    network: ws
     ws-opts:
-      path: /?ed=2560
+      path: /
       headers:
-        Host: sf.luozhi.site
+        host: edt.luozhi.dpdns.org
+    tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK-10
+  - name: MO -> 68.8 Mbps FAST
     type: vless
-    server: 172.64.153.25
+    server: 45.202.247.152
     port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
+    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
     tls: true
+    servername: edt.luozhi.dpdns.org
+    network: ws
     ws-opts:
-      path: /?ed=2560
+      path: /
       headers:
-        Host: sf.luozhi.site
+        host: edt.luozhi.dpdns.org
+    tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK [优选高速 54.95ms 15.89Mbps]_1
-    type: vless
-    server: 185.92.47.93
-    port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: HK [优选高速 60.92ms 16.2Mbps]_1
-    type: vless
-    server: 2.27.109.35
-    port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 62.42ms 19.48Mbps]_1
-    type: vless
-    server: 43.133.237.158
-    port: 8443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: HK [优选高速 64.69ms 15.92Mbps]_1
-    type: vless
-    server: 195.58.144.77
-    port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: JP [优选高速 68.47ms 16.88Mbps]_1
-    type: vless
-    server: 43.167.9.109
-    port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 70.17ms 19.24Mbps]_1
-    type: vless
-    server: 54.180.141.246
-    port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: JP [优选高速 73.99ms 13.67Mbps]_1
-    type: vless
-    server: 43.167.246.133
-    port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: KR [优选高速 76.6ms 19.5Mbps]_1
-    type: vless
-    server: 119.28.162.39
-    port: 8443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
-  - name: MO [优选高速 76.65ms 14.88Mbps]_1
-    type: vless
-    server: 45.202.246.91
-    port: 8443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    network: ws
-    servername: sf.luozhi.site
-    tls: true
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        Host: sf.luozhi.site
-    skip-cert-verify: true
-    udp: true
+  - {name: 直连, type: direct}
+
+# 全局配置 
+mixed-port: 7890
+allow-lan: true
+bind-address: "*"
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+log-level: info
+keep-alive-idle: 600
+keep-alive-interval: 15
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+external-controller: 0.0.0.0:9090
+secret: ""
+external-ui: ui
+external-ui-url: "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip"
+
+# 嗅探
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+    QUIC:
+      ports: [443, 8443]
+  skip-domain:
+    - "Mijia Cloud"
+    - "+.push.apple.com"
+
+# 入站
+tun:
+  enable: true
+  stack: mixed
+  dns-hijack: ["any:53", "tcp://any:53"]
+  auto-route: true
+  auto-redirect: true
+  auto-detect-interface: true
+  # 关键：严格路由模式。开启后所有流量（包括未匹配 auto-route 规则、
+  # 其他网卡产生的流量）都会被强制送入 TUN，避免 DNS/流量绕过代理直接
+  # 从物理网卡发出而泄露。这是本配置与"不防泄漏"版本的核心区别。
+  strict-route: true
+  # strict-route 开启后，本机连接局域网设备、Docker/虚拟网卡等可能受影响，
+  # 按需把相关网段/接口排除掉，保证局域网访问和虚拟化网络正常。
+  route-exclude-address:
+    - 192.168.0.0/16
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+  exclude-interface:
+    - "docker*"
+    - "podman*"
+
+# DNS模块
+dns:
+  enable: true
+  cache-algorithm: arc
+  ipv6: false
+  # 让 DNS 域名解析结果按照 proxy-groups 的实际路由结果来处理
+  # （比如走代理的域名，其真实 IP 解析也通过对应代理完成），
+  # 避免解析请求脱离代理规则直接从本地发出而泄露。
+  respect-rules: true
+  # 优先使用 hosts 文件中的记录，减少不必要的外部查询
+  use-hosts: true
+  use-system-hosts: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.0/16
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+    - "*"
+    - "+.lan"
+    - "+.local"
+    - "+.market.xiaomi.com"
+  # bootstrap：仅用于解析下面 nameserver/proxy-server-nameserver 中那些
+  # DoH 域名本身（比如 dns.alidns.com 这个域名要先被解析成 IP），
+  # 走明文国内 DNS，不涉及你实际访问的网站域名，不算泄露。
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  # 兜底解析（不会走 nameserver-policy 命中的域名走这里，走境外加密 DoH）
+  nameserver:
+    - https://dns.cloudflare.com/dns-query
+    - https://dns.google/dns-query
+  # 核心：按域名分流 DNS 解析——这是内核（mihomo/clash-meta）级别的
+  # 能力，OpenClash、Clash Party、Clash Verge 等所有基于该内核的客户端
+  # 都支持，不依赖任何客户端专属功能，因此是"通用"防泄漏的关键。
+  # 命中国内网站/私有地址的域名 → 用国内明文 DNS 解析，走直连获得准确 CDN。
+  # 其余（默认走代理的境外域名）→ 全部走上面 nameserver 里的加密 DoH。
+  nameserver-policy:
+    "geosite:private,cn":
+      - 223.5.5.5
+      - 119.29.29.29
+  # 用于解析代理服务器自身域名（机场订阅域名等），必须用直连/国内 DNS
+  # 明文解析，不能走 fake-ip，否则会出现"解析代理服务器需要先连代理，
+  # 连代理又需要先解析代理服务器"的死循环，也是常见的泄露/连不上根因。
+  proxy-server-nameserver:
+    - https://223.5.5.5/dns-query
+    - https://120.53.53.53/dns-query
+ 
+# 出站策略，根据自己情况调整每个策略里分组排序，增删都可以，比如把美国自动放到第一个，比如删除香港故转，注意别漏掉表情逗号等。
+# 如果相应分组没有筛选到对应的国家，请根据自己节点名字调整筛选关键字。
+# 没有再使用锚点和icon图标，是考虑很多新手修改难度，这样新手修改某个分组更容易些。
 proxy-groups:
-  - name: 🚀 节点选择
-    type: select
-    proxies:
-      - ♻️ 自动选择
-      - DIRECT
-      - JP-vl-reality-server
-      - JP-hy2-server
-      - JP-vm-ws-server
-      - JP-tu5-server
-      - JP-anytls-server
-      - JP-vm-argo-server
-      - vm-argo-ECS553388742129-HK
-      - vm-argo-ECS553388742129-US-1
-      - vm-argo-ECS553388742129-US-2
-      - vm-argo-ECS553388742129-US-3
-      - Vercel-SG-Amazon.com
-      - Vercel-SG-Amazon.com_1
-      - Vercel-SG-Amazon.com_2
-      - HK 移动优选[25ms]162.159.198.1:8443#▼ 精选域名 迷你版 | 优选网BestCF.pages.dev
-      - HK [优选高速 54.95ms 15.89Mbps]
-      - HK [优选高速 60.92ms 16.2Mbps]
-      - KR [优选高速 62.42ms 19.48Mbps]
-      - HK [优选高速 64.69ms 15.92Mbps]
-      - JP [优选高速 68.47ms 16.88Mbps]
-      - KR [优选高速 70.17ms 19.24Mbps]
-      - JP [优选高速 73.99ms 13.67Mbps]
-      - KR [优选高速 76.6ms 19.5Mbps]
-      - MO [优选高速 76.65ms 14.88Mbps]
-      - JP [优选高速 82.86ms 14.0Mbps]
-      - JP [优选高速 83.52ms 13.82Mbps]
-      - JP [优选高速 83.56ms 15.11Mbps]
-      - JP [优选高速 83.79ms 10.74Mbps]
-      - TW [优选高速 83.81ms 15.79Mbps]
-      - JP [优选高速 83.86ms 10.93Mbps]
-      - VN [优选高速 86.16ms 14.23Mbps]
-      - SG [优选高速 89.25ms 15.44Mbps]
-      - SG [优选高速 90.41ms 14.44Mbps]
-      - SG [优选高速 91.49ms 12.12Mbps]
-      - SG [优选高速 91.52ms 13.65Mbps]
-      - SG [优选高速 92.34ms 12.06Mbps]
-      - SG [优选高速 92.83ms 15.35Mbps]
-      - SG [优选高速 94.4ms 14.06Mbps]
-      - TW [优选高速 94.57ms 14.01Mbps]
-      - KR [优选高速 112.42ms 11.57Mbps]
-      - TW [优选高速 116.99ms 14.08Mbps]
-      - KR [优选高速 118.23ms 11.79Mbps]
-      - MY [优选高速 118.3ms 12.97Mbps]
-      - KR [优选高速 119.89ms 14.97Mbps]
-      - KR [优选高速 120.32ms 12.2Mbps]
-      - IN [优选高速 127.33ms 8.94Mbps]
-      - TH [优选高速 132.37ms 12.16Mbps]
-      - MY [优选高速 135.32ms 12.58Mbps]
-      - IN [优选高速 138.77ms 8.69Mbps]
-      - MY [优选高速 139.96ms 10.43Mbps]
-      - IN [优选高速 142.21ms 8.54Mbps]
-      - TH [优选高速 143.39ms 11.65Mbps]
-      - IN [优选高速 143.79ms 8.86Mbps]
-      - IN [优选高速 145.56ms 10.65Mbps]
-      - IN [优选高速 148.24ms 9.47Mbps]
-      - DE [优选高速 154.92ms 9.76Mbps]
-      - US [优选高速 157.51ms 8.73Mbps]
-      - DE [优选高速 161.85ms 9.0Mbps]
-      - US [优选高速 162.68ms 9.66Mbps]
-      - DE [优选高速 162.94ms 8.86Mbps]
-      - US [优选高速 164.49ms 9.03Mbps]
-      - US [优选高速 164.86ms 8.4Mbps]
-      - AE [优选高速 169.98ms 8.16Mbps]
-      - AE [优选高速 170.44ms 8.49Mbps]
-      - VN [优选高速 178.96ms 14.24Mbps]
-      - TW [优选高速 187.99ms 18.33Mbps]
-      - VN [优选高速 220.58ms 12.98Mbps]
-      - VN [优选高速 222.0ms 10.33Mbps]
-      - VN [优选高速 229.41ms 10.84Mbps]
-      - VN [优选高速 250.87ms 9.75Mbps]
-      - MY [优选高速 352.96ms 12.38Mbps]
-      - ID [优选高速 365.38ms 11.07Mbps]
-      - TH [优选高速 1121.05ms 9.96Mbps]
-      - AR [优选高速 1162.02ms 12.46Mbps]
-      - HK-1
-      - HK-2
-      - HK-3
-      - HK-4
-      - HK-5
-      - HK-6
-      - HK-7
-      - HK-8
-      - HK-9
-      - HK-10
-      - HK [优选高速 54.95ms 15.89Mbps]_1
-      - HK [优选高速 60.92ms 16.2Mbps]_1
-      - KR [优选高速 62.42ms 19.48Mbps]_1
-      - HK [优选高速 64.69ms 15.92Mbps]_1
-      - JP [优选高速 68.47ms 16.88Mbps]_1
-      - KR [优选高速 70.17ms 19.24Mbps]_1
-      - JP [优选高速 73.99ms 13.67Mbps]_1
-      - KR [优选高速 76.6ms 19.5Mbps]_1
-      - MO [优选高速 76.65ms 14.88Mbps]_1
-  - name: ♻️ 自动选择
-    type: url-test
-    proxies:
-      - JP-vl-reality-server
-      - JP-hy2-server
-      - JP-vm-ws-server
-      - JP-tu5-server
-      - JP-anytls-server
-      - JP-vm-argo-server
-      - vm-argo-ECS553388742129-HK
-      - vm-argo-ECS553388742129-US-1
-      - vm-argo-ECS553388742129-US-2
-      - vm-argo-ECS553388742129-US-3
-      - Vercel-SG-Amazon.com
-      - Vercel-SG-Amazon.com_1
-      - Vercel-SG-Amazon.com_2
-      - HK 移动优选[25ms]162.159.198.1:8443#▼ 精选域名 迷你版 | 优选网BestCF.pages.dev
-      - HK [优选高速 54.95ms 15.89Mbps]
-      - HK [优选高速 60.92ms 16.2Mbps]
-      - KR [优选高速 62.42ms 19.48Mbps]
-      - HK [优选高速 64.69ms 15.92Mbps]
-      - JP [优选高速 68.47ms 16.88Mbps]
-      - KR [优选高速 70.17ms 19.24Mbps]
-      - JP [优选高速 73.99ms 13.67Mbps]
-      - KR [优选高速 76.6ms 19.5Mbps]
-      - MO [优选高速 76.65ms 14.88Mbps]
-      - JP [优选高速 82.86ms 14.0Mbps]
-      - JP [优选高速 83.52ms 13.82Mbps]
-      - JP [优选高速 83.56ms 15.11Mbps]
-      - JP [优选高速 83.79ms 10.74Mbps]
-      - TW [优选高速 83.81ms 15.79Mbps]
-      - JP [优选高速 83.86ms 10.93Mbps]
-      - VN [优选高速 86.16ms 14.23Mbps]
-      - SG [优选高速 89.25ms 15.44Mbps]
-      - SG [优选高速 90.41ms 14.44Mbps]
-      - SG [优选高速 91.49ms 12.12Mbps]
-      - SG [优选高速 91.52ms 13.65Mbps]
-      - SG [优选高速 92.34ms 12.06Mbps]
-      - SG [优选高速 92.83ms 15.35Mbps]
-      - SG [优选高速 94.4ms 14.06Mbps]
-      - TW [优选高速 94.57ms 14.01Mbps]
-      - KR [优选高速 112.42ms 11.57Mbps]
-      - TW [优选高速 116.99ms 14.08Mbps]
-      - KR [优选高速 118.23ms 11.79Mbps]
-      - MY [优选高速 118.3ms 12.97Mbps]
-      - KR [优选高速 119.89ms 14.97Mbps]
-      - KR [优选高速 120.32ms 12.2Mbps]
-      - IN [优选高速 127.33ms 8.94Mbps]
-      - TH [优选高速 132.37ms 12.16Mbps]
-      - MY [优选高速 135.32ms 12.58Mbps]
-      - IN [优选高速 138.77ms 8.69Mbps]
-      - MY [优选高速 139.96ms 10.43Mbps]
-      - IN [优选高速 142.21ms 8.54Mbps]
-      - TH [优选高速 143.39ms 11.65Mbps]
-      - IN [优选高速 143.79ms 8.86Mbps]
-      - IN [优选高速 145.56ms 10.65Mbps]
-      - IN [优选高速 148.24ms 9.47Mbps]
-      - DE [优选高速 154.92ms 9.76Mbps]
-      - US [优选高速 157.51ms 8.73Mbps]
-      - DE [优选高速 161.85ms 9.0Mbps]
-      - US [优选高速 162.68ms 9.66Mbps]
-      - DE [优选高速 162.94ms 8.86Mbps]
-      - US [优选高速 164.49ms 9.03Mbps]
-      - US [优选高速 164.86ms 8.4Mbps]
-      - AE [优选高速 169.98ms 8.16Mbps]
-      - AE [优选高速 170.44ms 8.49Mbps]
-      - VN [优选高速 178.96ms 14.24Mbps]
-      - TW [优选高速 187.99ms 18.33Mbps]
-      - VN [优选高速 220.58ms 12.98Mbps]
-      - VN [优选高速 222.0ms 10.33Mbps]
-      - VN [优选高速 229.41ms 10.84Mbps]
-      - VN [优选高速 250.87ms 9.75Mbps]
-      - MY [优选高速 352.96ms 12.38Mbps]
-      - ID [优选高速 365.38ms 11.07Mbps]
-      - TH [优选高速 1121.05ms 9.96Mbps]
-      - AR [优选高速 1162.02ms 12.46Mbps]
-      - HK-1
-      - HK-2
-      - HK-3
-      - HK-4
-      - HK-5
-      - HK-6
-      - HK-7
-      - HK-8
-      - HK-9
-      - HK-10
-      - HK [优选高速 54.95ms 15.89Mbps]_1
-      - HK [优选高速 60.92ms 16.2Mbps]_1
-      - KR [优选高速 62.42ms 19.48Mbps]_1
-      - HK [优选高速 64.69ms 15.92Mbps]_1
-      - JP [优选高速 68.47ms 16.88Mbps]_1
-      - KR [优选高速 70.17ms 19.24Mbps]_1
-      - JP [优选高速 73.99ms 13.67Mbps]_1
-      - KR [优选高速 76.6ms 19.5Mbps]_1
-      - MO [优选高速 76.65ms 14.88Mbps]_1
-    url: http://www.gstatic.com/generate_204
-    interval: 300
-    tolerance: 50
-  - name: 🌍 国外媒体
-    type: select
-    proxies:
-      - 🚀 节点选择
-      - ♻️ 自动选择
-      - 🎯 全球直连
-      - JP-vl-reality-server
-      - JP-hy2-server
-      - JP-vm-ws-server
-      - JP-tu5-server
-      - JP-anytls-server
-      - JP-vm-argo-server
-      - vm-argo-ECS553388742129-HK
-      - vm-argo-ECS553388742129-US-1
-      - vm-argo-ECS553388742129-US-2
-      - vm-argo-ECS553388742129-US-3
-      - Vercel-SG-Amazon.com
-      - Vercel-SG-Amazon.com_1
-      - Vercel-SG-Amazon.com_2
-      - HK 移动优选[25ms]162.159.198.1:8443#▼ 精选域名 迷你版 | 优选网BestCF.pages.dev
-      - HK [优选高速 54.95ms 15.89Mbps]
-      - HK [优选高速 60.92ms 16.2Mbps]
-      - KR [优选高速 62.42ms 19.48Mbps]
-      - HK [优选高速 64.69ms 15.92Mbps]
-      - JP [优选高速 68.47ms 16.88Mbps]
-      - KR [优选高速 70.17ms 19.24Mbps]
-      - JP [优选高速 73.99ms 13.67Mbps]
-      - KR [优选高速 76.6ms 19.5Mbps]
-      - MO [优选高速 76.65ms 14.88Mbps]
-      - JP [优选高速 82.86ms 14.0Mbps]
-      - JP [优选高速 83.52ms 13.82Mbps]
-      - JP [优选高速 83.56ms 15.11Mbps]
-      - JP [优选高速 83.79ms 10.74Mbps]
-      - TW [优选高速 83.81ms 15.79Mbps]
-      - JP [优选高速 83.86ms 10.93Mbps]
-      - VN [优选高速 86.16ms 14.23Mbps]
-      - SG [优选高速 89.25ms 15.44Mbps]
-      - SG [优选高速 90.41ms 14.44Mbps]
-      - SG [优选高速 91.49ms 12.12Mbps]
-      - SG [优选高速 91.52ms 13.65Mbps]
-      - SG [优选高速 92.34ms 12.06Mbps]
-      - SG [优选高速 92.83ms 15.35Mbps]
-      - SG [优选高速 94.4ms 14.06Mbps]
-      - TW [优选高速 94.57ms 14.01Mbps]
-      - KR [优选高速 112.42ms 11.57Mbps]
-      - TW [优选高速 116.99ms 14.08Mbps]
-      - KR [优选高速 118.23ms 11.79Mbps]
-      - MY [优选高速 118.3ms 12.97Mbps]
-      - KR [优选高速 119.89ms 14.97Mbps]
-      - KR [优选高速 120.32ms 12.2Mbps]
-      - IN [优选高速 127.33ms 8.94Mbps]
-      - TH [优选高速 132.37ms 12.16Mbps]
-      - MY [优选高速 135.32ms 12.58Mbps]
-      - IN [优选高速 138.77ms 8.69Mbps]
-      - MY [优选高速 139.96ms 10.43Mbps]
-      - IN [优选高速 142.21ms 8.54Mbps]
-      - TH [优选高速 143.39ms 11.65Mbps]
-      - IN [优选高速 143.79ms 8.86Mbps]
-      - IN [优选高速 145.56ms 10.65Mbps]
-      - IN [优选高速 148.24ms 9.47Mbps]
-      - DE [优选高速 154.92ms 9.76Mbps]
-      - US [优选高速 157.51ms 8.73Mbps]
-      - DE [优选高速 161.85ms 9.0Mbps]
-      - US [优选高速 162.68ms 9.66Mbps]
-      - DE [优选高速 162.94ms 8.86Mbps]
-      - US [优选高速 164.49ms 9.03Mbps]
-      - US [优选高速 164.86ms 8.4Mbps]
-      - AE [优选高速 169.98ms 8.16Mbps]
-      - AE [优选高速 170.44ms 8.49Mbps]
-      - VN [优选高速 178.96ms 14.24Mbps]
-      - TW [优选高速 187.99ms 18.33Mbps]
-      - VN [优选高速 220.58ms 12.98Mbps]
-      - VN [优选高速 222.0ms 10.33Mbps]
-      - VN [优选高速 229.41ms 10.84Mbps]
-      - VN [优选高速 250.87ms 9.75Mbps]
-      - MY [优选高速 352.96ms 12.38Mbps]
-      - ID [优选高速 365.38ms 11.07Mbps]
-      - TH [优选高速 1121.05ms 9.96Mbps]
-      - AR [优选高速 1162.02ms 12.46Mbps]
-      - HK-1
-      - HK-2
-      - HK-3
-      - HK-4
-      - HK-5
-      - HK-6
-      - HK-7
-      - HK-8
-      - HK-9
-      - HK-10
-      - HK [优选高速 54.95ms 15.89Mbps]_1
-      - HK [优选高速 60.92ms 16.2Mbps]_1
-      - KR [优选高速 62.42ms 19.48Mbps]_1
-      - HK [优选高速 64.69ms 15.92Mbps]_1
-      - JP [优选高速 68.47ms 16.88Mbps]_1
-      - KR [优选高速 70.17ms 19.24Mbps]_1
-      - JP [优选高速 73.99ms 13.67Mbps]_1
-      - KR [优选高速 76.6ms 19.5Mbps]_1
-      - MO [优选高速 76.65ms 14.88Mbps]_1
-  - name: 📲 电报信息
-    type: select
-    proxies:
-      - 🚀 节点选择
-      - 🎯 全球直连
-      - JP-vl-reality-server
-      - JP-hy2-server
-      - JP-vm-ws-server
-      - JP-tu5-server
-      - JP-anytls-server
-      - JP-vm-argo-server
-      - vm-argo-ECS553388742129-HK
-      - vm-argo-ECS553388742129-US-1
-      - vm-argo-ECS553388742129-US-2
-      - vm-argo-ECS553388742129-US-3
-      - Vercel-SG-Amazon.com
-      - Vercel-SG-Amazon.com_1
-      - Vercel-SG-Amazon.com_2
-      - HK 移动优选[25ms]162.159.198.1:8443#▼ 精选域名 迷你版 | 优选网BestCF.pages.dev
-      - HK [优选高速 54.95ms 15.89Mbps]
-      - HK [优选高速 60.92ms 16.2Mbps]
-      - KR [优选高速 62.42ms 19.48Mbps]
-      - HK [优选高速 64.69ms 15.92Mbps]
-      - JP [优选高速 68.47ms 16.88Mbps]
-      - KR [优选高速 70.17ms 19.24Mbps]
-      - JP [优选高速 73.99ms 13.67Mbps]
-      - KR [优选高速 76.6ms 19.5Mbps]
-      - MO [优选高速 76.65ms 14.88Mbps]
-      - JP [优选高速 82.86ms 14.0Mbps]
-      - JP [优选高速 83.52ms 13.82Mbps]
-      - JP [优选高速 83.56ms 15.11Mbps]
-      - JP [优选高速 83.79ms 10.74Mbps]
-      - TW [优选高速 83.81ms 15.79Mbps]
-      - JP [优选高速 83.86ms 10.93Mbps]
-      - VN [优选高速 86.16ms 14.23Mbps]
-      - SG [优选高速 89.25ms 15.44Mbps]
-      - SG [优选高速 90.41ms 14.44Mbps]
-      - SG [优选高速 91.49ms 12.12Mbps]
-      - SG [优选高速 91.52ms 13.65Mbps]
-      - SG [优选高速 92.34ms 12.06Mbps]
-      - SG [优选高速 92.83ms 15.35Mbps]
-      - SG [优选高速 94.4ms 14.06Mbps]
-      - TW [优选高速 94.57ms 14.01Mbps]
-      - KR [优选高速 112.42ms 11.57Mbps]
-      - TW [优选高速 116.99ms 14.08Mbps]
-      - KR [优选高速 118.23ms 11.79Mbps]
-      - MY [优选高速 118.3ms 12.97Mbps]
-      - KR [优选高速 119.89ms 14.97Mbps]
-      - KR [优选高速 120.32ms 12.2Mbps]
-      - IN [优选高速 127.33ms 8.94Mbps]
-      - TH [优选高速 132.37ms 12.16Mbps]
-      - MY [优选高速 135.32ms 12.58Mbps]
-      - IN [优选高速 138.77ms 8.69Mbps]
-      - MY [优选高速 139.96ms 10.43Mbps]
-      - IN [优选高速 142.21ms 8.54Mbps]
-      - TH [优选高速 143.39ms 11.65Mbps]
-      - IN [优选高速 143.79ms 8.86Mbps]
-      - IN [优选高速 145.56ms 10.65Mbps]
-      - IN [优选高速 148.24ms 9.47Mbps]
-      - DE [优选高速 154.92ms 9.76Mbps]
-      - US [优选高速 157.51ms 8.73Mbps]
-      - DE [优选高速 161.85ms 9.0Mbps]
-      - US [优选高速 162.68ms 9.66Mbps]
-      - DE [优选高速 162.94ms 8.86Mbps]
-      - US [优选高速 164.49ms 9.03Mbps]
-      - US [优选高速 164.86ms 8.4Mbps]
-      - AE [优选高速 169.98ms 8.16Mbps]
-      - AE [优选高速 170.44ms 8.49Mbps]
-      - VN [优选高速 178.96ms 14.24Mbps]
-      - TW [优选高速 187.99ms 18.33Mbps]
-      - VN [优选高速 220.58ms 12.98Mbps]
-      - VN [优选高速 222.0ms 10.33Mbps]
-      - VN [优选高速 229.41ms 10.84Mbps]
-      - VN [优选高速 250.87ms 9.75Mbps]
-      - MY [优选高速 352.96ms 12.38Mbps]
-      - ID [优选高速 365.38ms 11.07Mbps]
-      - TH [优选高速 1121.05ms 9.96Mbps]
-      - AR [优选高速 1162.02ms 12.46Mbps]
-      - HK-1
-      - HK-2
-      - HK-3
-      - HK-4
-      - HK-5
-      - HK-6
-      - HK-7
-      - HK-8
-      - HK-9
-      - HK-10
-      - HK [优选高速 54.95ms 15.89Mbps]_1
-      - HK [优选高速 60.92ms 16.2Mbps]_1
-      - KR [优选高速 62.42ms 19.48Mbps]_1
-      - HK [优选高速 64.69ms 15.92Mbps]_1
-      - JP [优选高速 68.47ms 16.88Mbps]_1
-      - KR [优选高速 70.17ms 19.24Mbps]_1
-      - JP [优选高速 73.99ms 13.67Mbps]_1
-      - KR [优选高速 76.6ms 19.5Mbps]_1
-      - MO [优选高速 76.65ms 14.88Mbps]_1
-  - name: Ⓜ️ 微软服务
-    type: select
-    proxies:
-      - 🎯 全球直连
-      - 🚀 节点选择
-      - JP-vl-reality-server
-      - JP-hy2-server
-      - JP-vm-ws-server
-      - JP-tu5-server
-      - JP-anytls-server
-      - JP-vm-argo-server
-      - vm-argo-ECS553388742129-HK
-      - vm-argo-ECS553388742129-US-1
-      - vm-argo-ECS553388742129-US-2
-      - vm-argo-ECS553388742129-US-3
-      - Vercel-SG-Amazon.com
-      - Vercel-SG-Amazon.com_1
-      - Vercel-SG-Amazon.com_2
-      - HK 移动优选[25ms]162.159.198.1:8443#▼ 精选域名 迷你版 | 优选网BestCF.pages.dev
-      - HK [优选高速 54.95ms 15.89Mbps]
-      - HK [优选高速 60.92ms 16.2Mbps]
-      - KR [优选高速 62.42ms 19.48Mbps]
-      - HK [优选高速 64.69ms 15.92Mbps]
-      - JP [优选高速 68.47ms 16.88Mbps]
-      - KR [优选高速 70.17ms 19.24Mbps]
-      - JP [优选高速 73.99ms 13.67Mbps]
-      - KR [优选高速 76.6ms 19.5Mbps]
-      - MO [优选高速 76.65ms 14.88Mbps]
-      - JP [优选高速 82.86ms 14.0Mbps]
-      - JP [优选高速 83.52ms 13.82Mbps]
-      - JP [优选高速 83.56ms 15.11Mbps]
-      - JP [优选高速 83.79ms 10.74Mbps]
-      - TW [优选高速 83.81ms 15.79Mbps]
-      - JP [优选高速 83.86ms 10.93Mbps]
-      - VN [优选高速 86.16ms 14.23Mbps]
-      - SG [优选高速 89.25ms 15.44Mbps]
-      - SG [优选高速 90.41ms 14.44Mbps]
-      - SG [优选高速 91.49ms 12.12Mbps]
-      - SG [优选高速 91.52ms 13.65Mbps]
-      - SG [优选高速 92.34ms 12.06Mbps]
-      - SG [优选高速 92.83ms 15.35Mbps]
-      - SG [优选高速 94.4ms 14.06Mbps]
-      - TW [优选高速 94.57ms 14.01Mbps]
-      - KR [优选高速 112.42ms 11.57Mbps]
-      - TW [优选高速 116.99ms 14.08Mbps]
-      - KR [优选高速 118.23ms 11.79Mbps]
-      - MY [优选高速 118.3ms 12.97Mbps]
-      - KR [优选高速 119.89ms 14.97Mbps]
-      - KR [优选高速 120.32ms 12.2Mbps]
-      - IN [优选高速 127.33ms 8.94Mbps]
-      - TH [优选高速 132.37ms 12.16Mbps]
-      - MY [优选高速 135.32ms 12.58Mbps]
-      - IN [优选高速 138.77ms 8.69Mbps]
-      - MY [优选高速 139.96ms 10.43Mbps]
-      - IN [优选高速 142.21ms 8.54Mbps]
-      - TH [优选高速 143.39ms 11.65Mbps]
-      - IN [优选高速 143.79ms 8.86Mbps]
-      - IN [优选高速 145.56ms 10.65Mbps]
-      - IN [优选高速 148.24ms 9.47Mbps]
-      - DE [优选高速 154.92ms 9.76Mbps]
-      - US [优选高速 157.51ms 8.73Mbps]
-      - DE [优选高速 161.85ms 9.0Mbps]
-      - US [优选高速 162.68ms 9.66Mbps]
-      - DE [优选高速 162.94ms 8.86Mbps]
-      - US [优选高速 164.49ms 9.03Mbps]
-      - US [优选高速 164.86ms 8.4Mbps]
-      - AE [优选高速 169.98ms 8.16Mbps]
-      - AE [优选高速 170.44ms 8.49Mbps]
-      - VN [优选高速 178.96ms 14.24Mbps]
-      - TW [优选高速 187.99ms 18.33Mbps]
-      - VN [优选高速 220.58ms 12.98Mbps]
-      - VN [优选高速 222.0ms 10.33Mbps]
-      - VN [优选高速 229.41ms 10.84Mbps]
-      - VN [优选高速 250.87ms 9.75Mbps]
-      - MY [优选高速 352.96ms 12.38Mbps]
-      - ID [优选高速 365.38ms 11.07Mbps]
-      - TH [优选高速 1121.05ms 9.96Mbps]
-      - AR [优选高速 1162.02ms 12.46Mbps]
-      - HK-1
-      - HK-2
-      - HK-3
-      - HK-4
-      - HK-5
-      - HK-6
-      - HK-7
-      - HK-8
-      - HK-9
-      - HK-10
-      - HK [优选高速 54.95ms 15.89Mbps]_1
-      - HK [优选高速 60.92ms 16.2Mbps]_1
-      - KR [优选高速 62.42ms 19.48Mbps]_1
-      - HK [优选高速 64.69ms 15.92Mbps]_1
-      - JP [优选高速 68.47ms 16.88Mbps]_1
-      - KR [优选高速 70.17ms 19.24Mbps]_1
-      - JP [优选高速 73.99ms 13.67Mbps]_1
-      - KR [优选高速 76.6ms 19.5Mbps]_1
-      - MO [优选高速 76.65ms 14.88Mbps]_1
-  - name: 🍎 苹果服务
-    type: select
-    proxies:
-      - 🚀 节点选择
-      - 🎯 全球直连
-      - JP-vl-reality-server
-      - JP-hy2-server
-      - JP-vm-ws-server
-      - JP-tu5-server
-      - JP-anytls-server
-      - JP-vm-argo-server
-      - vm-argo-ECS553388742129-HK
-      - vm-argo-ECS553388742129-US-1
-      - vm-argo-ECS553388742129-US-2
-      - vm-argo-ECS553388742129-US-3
-      - Vercel-SG-Amazon.com
-      - Vercel-SG-Amazon.com_1
-      - Vercel-SG-Amazon.com_2
-      - HK 移动优选[25ms]162.159.198.1:8443#▼ 精选域名 迷你版 | 优选网BestCF.pages.dev
-      - HK [优选高速 54.95ms 15.89Mbps]
-      - HK [优选高速 60.92ms 16.2Mbps]
-      - KR [优选高速 62.42ms 19.48Mbps]
-      - HK [优选高速 64.69ms 15.92Mbps]
-      - JP [优选高速 68.47ms 16.88Mbps]
-      - KR [优选高速 70.17ms 19.24Mbps]
-      - JP [优选高速 73.99ms 13.67Mbps]
-      - KR [优选高速 76.6ms 19.5Mbps]
-      - MO [优选高速 76.65ms 14.88Mbps]
-      - JP [优选高速 82.86ms 14.0Mbps]
-      - JP [优选高速 83.52ms 13.82Mbps]
-      - JP [优选高速 83.56ms 15.11Mbps]
-      - JP [优选高速 83.79ms 10.74Mbps]
-      - TW [优选高速 83.81ms 15.79Mbps]
-      - JP [优选高速 83.86ms 10.93Mbps]
-      - VN [优选高速 86.16ms 14.23Mbps]
-      - SG [优选高速 89.25ms 15.44Mbps]
-      - SG [优选高速 90.41ms 14.44Mbps]
-      - SG [优选高速 91.49ms 12.12Mbps]
-      - SG [优选高速 91.52ms 13.65Mbps]
-      - SG [优选高速 92.34ms 12.06Mbps]
-      - SG [优选高速 92.83ms 15.35Mbps]
-      - SG [优选高速 94.4ms 14.06Mbps]
-      - TW [优选高速 94.57ms 14.01Mbps]
-      - KR [优选高速 112.42ms 11.57Mbps]
-      - TW [优选高速 116.99ms 14.08Mbps]
-      - KR [优选高速 118.23ms 11.79Mbps]
-      - MY [优选高速 118.3ms 12.97Mbps]
-      - KR [优选高速 119.89ms 14.97Mbps]
-      - KR [优选高速 120.32ms 12.2Mbps]
-      - IN [优选高速 127.33ms 8.94Mbps]
-      - TH [优选高速 132.37ms 12.16Mbps]
-      - MY [优选高速 135.32ms 12.58Mbps]
-      - IN [优选高速 138.77ms 8.69Mbps]
-      - MY [优选高速 139.96ms 10.43Mbps]
-      - IN [优选高速 142.21ms 8.54Mbps]
-      - TH [优选高速 143.39ms 11.65Mbps]
-      - IN [优选高速 143.79ms 8.86Mbps]
-      - IN [优选高速 145.56ms 10.65Mbps]
-      - IN [优选高速 148.24ms 9.47Mbps]
-      - DE [优选高速 154.92ms 9.76Mbps]
-      - US [优选高速 157.51ms 8.73Mbps]
-      - DE [优选高速 161.85ms 9.0Mbps]
-      - US [优选高速 162.68ms 9.66Mbps]
-      - DE [优选高速 162.94ms 8.86Mbps]
-      - US [优选高速 164.49ms 9.03Mbps]
-      - US [优选高速 164.86ms 8.4Mbps]
-      - AE [优选高速 169.98ms 8.16Mbps]
-      - AE [优选高速 170.44ms 8.49Mbps]
-      - VN [优选高速 178.96ms 14.24Mbps]
-      - TW [优选高速 187.99ms 18.33Mbps]
-      - VN [优选高速 220.58ms 12.98Mbps]
-      - VN [优选高速 222.0ms 10.33Mbps]
-      - VN [优选高速 229.41ms 10.84Mbps]
-      - VN [优选高速 250.87ms 9.75Mbps]
-      - MY [优选高速 352.96ms 12.38Mbps]
-      - ID [优选高速 365.38ms 11.07Mbps]
-      - TH [优选高速 1121.05ms 9.96Mbps]
-      - AR [优选高速 1162.02ms 12.46Mbps]
-      - HK-1
-      - HK-2
-      - HK-3
-      - HK-4
-      - HK-5
-      - HK-6
-      - HK-7
-      - HK-8
-      - HK-9
-      - HK-10
-      - HK [优选高速 54.95ms 15.89Mbps]_1
-      - HK [优选高速 60.92ms 16.2Mbps]_1
-      - KR [优选高速 62.42ms 19.48Mbps]_1
-      - HK [优选高速 64.69ms 15.92Mbps]_1
-      - JP [优选高速 68.47ms 16.88Mbps]_1
-      - KR [优选高速 70.17ms 19.24Mbps]_1
-      - JP [优选高速 73.99ms 13.67Mbps]_1
-      - KR [优选高速 76.6ms 19.5Mbps]_1
-      - MO [优选高速 76.65ms 14.88Mbps]_1
-  - name: 🎯 全球直连
-    type: select
-    proxies:
-      - DIRECT
-      - 🚀 节点选择
-      - ♻️ 自动选择
-  - name: 🛑 全球拦截
-    type: select
-    proxies:
-      - REJECT
-      - DIRECT
-  - name: 🍃 应用净化
-    type: select
-    proxies:
-      - REJECT
-      - DIRECT
-  - name: 🐟 漏网之鱼
-    type: select
-    proxies:
-      - 🚀 节点选择
-      - 🎯 全球直连
-      - ♻️ 自动选择
-      - JP-vl-reality-server
-      - JP-hy2-server
-      - JP-vm-ws-server
-      - JP-tu5-server
-      - JP-anytls-server
-      - JP-vm-argo-server
-      - vm-argo-ECS553388742129-HK
-      - vm-argo-ECS553388742129-US-1
-      - vm-argo-ECS553388742129-US-2
-      - vm-argo-ECS553388742129-US-3
-      - Vercel-SG-Amazon.com
-      - Vercel-SG-Amazon.com_1
-      - Vercel-SG-Amazon.com_2
-      - HK 移动优选[25ms]162.159.198.1:8443#▼ 精选域名 迷你版 | 优选网BestCF.pages.dev
-      - HK [优选高速 54.95ms 15.89Mbps]
-      - HK [优选高速 60.92ms 16.2Mbps]
-      - KR [优选高速 62.42ms 19.48Mbps]
-      - HK [优选高速 64.69ms 15.92Mbps]
-      - JP [优选高速 68.47ms 16.88Mbps]
-      - KR [优选高速 70.17ms 19.24Mbps]
-      - JP [优选高速 73.99ms 13.67Mbps]
-      - KR [优选高速 76.6ms 19.5Mbps]
-      - MO [优选高速 76.65ms 14.88Mbps]
-      - JP [优选高速 82.86ms 14.0Mbps]
-      - JP [优选高速 83.52ms 13.82Mbps]
-      - JP [优选高速 83.56ms 15.11Mbps]
-      - JP [优选高速 83.79ms 10.74Mbps]
-      - TW [优选高速 83.81ms 15.79Mbps]
-      - JP [优选高速 83.86ms 10.93Mbps]
-      - VN [优选高速 86.16ms 14.23Mbps]
-      - SG [优选高速 89.25ms 15.44Mbps]
-      - SG [优选高速 90.41ms 14.44Mbps]
-      - SG [优选高速 91.49ms 12.12Mbps]
-      - SG [优选高速 91.52ms 13.65Mbps]
-      - SG [优选高速 92.34ms 12.06Mbps]
-      - SG [优选高速 92.83ms 15.35Mbps]
-      - SG [优选高速 94.4ms 14.06Mbps]
-      - TW [优选高速 94.57ms 14.01Mbps]
-      - KR [优选高速 112.42ms 11.57Mbps]
-      - TW [优选高速 116.99ms 14.08Mbps]
-      - KR [优选高速 118.23ms 11.79Mbps]
-      - MY [优选高速 118.3ms 12.97Mbps]
-      - KR [优选高速 119.89ms 14.97Mbps]
-      - KR [优选高速 120.32ms 12.2Mbps]
-      - IN [优选高速 127.33ms 8.94Mbps]
-      - TH [优选高速 132.37ms 12.16Mbps]
-      - MY [优选高速 135.32ms 12.58Mbps]
-      - IN [优选高速 138.77ms 8.69Mbps]
-      - MY [优选高速 139.96ms 10.43Mbps]
-      - IN [优选高速 142.21ms 8.54Mbps]
-      - TH [优选高速 143.39ms 11.65Mbps]
-      - IN [优选高速 143.79ms 8.86Mbps]
-      - IN [优选高速 145.56ms 10.65Mbps]
-      - IN [优选高速 148.24ms 9.47Mbps]
-      - DE [优选高速 154.92ms 9.76Mbps]
-      - US [优选高速 157.51ms 8.73Mbps]
-      - DE [优选高速 161.85ms 9.0Mbps]
-      - US [优选高速 162.68ms 9.66Mbps]
-      - DE [优选高速 162.94ms 8.86Mbps]
-      - US [优选高速 164.49ms 9.03Mbps]
-      - US [优选高速 164.86ms 8.4Mbps]
-      - AE [优选高速 169.98ms 8.16Mbps]
-      - AE [优选高速 170.44ms 8.49Mbps]
-      - VN [优选高速 178.96ms 14.24Mbps]
-      - TW [优选高速 187.99ms 18.33Mbps]
-      - VN [优选高速 220.58ms 12.98Mbps]
-      - VN [优选高速 222.0ms 10.33Mbps]
-      - VN [优选高速 229.41ms 10.84Mbps]
-      - VN [优选高速 250.87ms 9.75Mbps]
-      - MY [优选高速 352.96ms 12.38Mbps]
-      - ID [优选高速 365.38ms 11.07Mbps]
-      - TH [优选高速 1121.05ms 9.96Mbps]
-      - AR [优选高速 1162.02ms 12.46Mbps]
-      - HK-1
-      - HK-2
-      - HK-3
-      - HK-4
-      - HK-5
-      - HK-6
-      - HK-7
-      - HK-8
-      - HK-9
-      - HK-10
-      - HK [优选高速 54.95ms 15.89Mbps]_1
-      - HK [优选高速 60.92ms 16.2Mbps]_1
-      - KR [优选高速 62.42ms 19.48Mbps]_1
-      - HK [优选高速 64.69ms 15.92Mbps]_1
-      - JP [优选高速 68.47ms 16.88Mbps]_1
-      - KR [优选高速 70.17ms 19.24Mbps]_1
-      - JP [优选高速 73.99ms 13.67Mbps]_1
-      - KR [优选高速 76.6ms 19.5Mbps]_1
-      - MO [优选高速 76.65ms 14.88Mbps]_1
-rule-providers:
-  LocalAreaNetwork:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/LocalAreaNetwork.list
-    path: ./rules/LocalAreaNetwork.yaml
-  BanAD:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/BanAD.list
-    path: ./rules/BanAD.yaml
-  BanProgramAD:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/BanProgramAD.list
-    path: ./rules/BanProgramAD.yaml
-  GoogleCN:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/GoogleCN.list
-    path: ./rules/GoogleCN.yaml
-  SteamCN:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/Ruleset/SteamCN.list
-    path: ./rules/SteamCN.yaml
-  Microsoft:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/Microsoft.list
-    path: ./rules/Microsoft.yaml
-  Apple:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/Apple.list
-    path: ./rules/Apple.yaml
-  ProxyMedia:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/ProxyMedia.list
-    path: ./rules/ProxyMedia.yaml
-  Telegram:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/Telegram.list
-    path: ./rules/Telegram.yaml
-  ProxyLite:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/ProxyLite.list
-    path: ./rules/ProxyLite.yaml
-  ChinaDomain:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/ChinaDomain.list
-    path: ./rules/ChinaDomain.yaml
-  ChinaCompanyIp:
-    type: http
-    behavior: classical
-    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/ChinaCompanyIp.list
-    path: ./rules/ChinaCompanyIp.yaml
+  - {name: 🚀 默认代理, type: select, proxies: [🔯 香港故转, 🔯 日本故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 📹 YouTube, type: select, proxies: [🔯 美国故转, 🔯 香港故转, 🔯 日本故转, 🔯 狮城故转, ♻️ 美国自动, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 🍀 Google, type: select, proxies: [🔯 香港故转, 🔯 日本故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 🤖 ChatGPT, type: select, proxies: [🔯 日本故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 👨🏿‍💻 GitHub, type: select, proxies: [🔯 香港故转, 🔯 日本故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 🐬 OneDrive, type: select, proxies: [🔯 日本故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 🪟 Microsoft, type: select, proxies: [🔯 日本故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 🎵 TikTok, type: select, proxies: [🔯 日本故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 📲 Telegram, type: select, proxies: [🔯 香港故转, 🔯 日本故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 🎥 NETFLIX, type: select, proxies: [🔯 狮城故转, 🔯 香港故转, 🔯 日本故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 💶 PayPal, type: select, proxies: [🔯 日本故转, 🔯 香港故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 🐟 漏网之鱼, type: select, proxies: [🚀 默认代理, 🔯 香港故转, 🔯 日本故转, 🔯 狮城故转, 🔯 美国故转, ♻️ 香港自动, ♻️ 日本自动, ♻️ 狮城自动, ♻️ 美国自动, ♻️ 自动选择, 🇭🇰 香港节点, 🇯🇵 日本节点, 🇸🇬 狮城节点, 🇺🇲 美国节点, 🌐 全部节点, 直连]}
+  - {name: 🇭🇰 香港节点, type: select, include-all: true, filter: "(?=.*(港|HK|(?i)Hong))^((?!(台|日|韩|新|深|美)).)*$"}
+  - {name: 🇯🇵 日本节点, type: select, include-all: true, filter: "(?=.*(日|JP|(?i)Japan))^((?!(港|台|韩|新|美)).)*$"}
+  - {name: 🇸🇬 狮城节点, type: select, include-all: true, filter: "(?=.*(新加坡|坡|狮城|SG|Singapore))^((?!(台|日|韩|深|美)).)*$"}
+  - {name: 🇺🇲 美国节点, type: select, include-all: true, filter: "(?=.*(美|US|(?i)States|America))^((?!(港|台|韩|新|日)).)*$"}
+  - {name: 🔯 香港故转, type: fallback, include-all: true, interval: 300, filter: "(?=.*(港|HK|(?i)Hong))^((?!(台|日|韩|新|深|美)).)*$"}
+  - {name: 🔯 日本故转, type: fallback, include-all: true, interval: 300, filter: "(?=.*(日|JP|(?i)Japan))^((?!(港|台|韩|新|美)).)*$"}
+  - {name: 🔯 狮城故转, type: fallback, include-all: true, interval: 300, filter: "(?=.*(新加坡|坡|狮城|SG|Singapore))^((?!(台|日|韩|深|美)).)*$"}
+  - {name: 🔯 美国故转, type: fallback, include-all: true, interval: 300, filter: "(?=.*(美|US|(?i)States|America))^((?!(港|台|韩|新|日)).)*$"}
+  - {name: ♻️ 香港自动, type: url-test, include-all: true, tolerance: 20, interval: 300, filter: "(?=.*(港|HK|(?i)Hong))^((?!(台|日|韩|新|深|美)).)*$"}
+  - {name: ♻️ 日本自动, type: url-test, include-all: true, tolerance: 20, interval: 300, filter: "(?=.*(日|JP|(?i)Japan))^((?!(港|台|韩|新|美)).)*$"}
+  - {name: ♻️ 狮城自动, type: url-test, include-all: true, tolerance: 20, interval: 300, filter: "(?=.*(新加坡|坡|狮城|SG|Singapore))^((?!(港|台|韩|日|美)).)*$"}
+  - {name: ♻️ 美国自动, type: url-test, include-all: true, tolerance: 20, interval: 300, filter: "(?=.*(美|US|(?i)States|America))^((?!(港|台|日|韩|新)).)*$"}
+  - {name: ♻️ 自动选择, type: url-test, include-all: true, tolerance: 20, interval: 300, filter: "^((?!(直连)).)*$"}
+  - {name: 🌐 全部节点, type: select, include-all: true}
+
+# 规则匹配
 rules:
-  - DOMAIN-SUFFIX,nodebuf.com,🚀 节点选择
-  - RULE-SET,LocalAreaNetwork,🎯 全球直连
-  - RULE-SET,BanAD,🛑 全球拦截
-  - RULE-SET,BanProgramAD,🍃 应用净化
-  - RULE-SET,GoogleCN,🎯 全球直连
-  - RULE-SET,SteamCN,🎯 全球直连
-  - RULE-SET,Microsoft,Ⓜ️ 微软服务
-  - RULE-SET,Apple,🍎 苹果服务
-  - RULE-SET,ProxyMedia,🌍 国外媒体
-  - RULE-SET,Telegram,📲 电报信息
-  - RULE-SET,ProxyLite,🚀 节点选择
-  - RULE-SET,ChinaDomain,🎯 全球直连
-  - RULE-SET,ChinaCompanyIp,🎯 全球直连
-  - GEOIP,CN,🎯 全球直连
+  - RULE-SET,private_ip,直连,no-resolve
+  - RULE-SET,private_domain,直连
+  - DOMAIN-SUFFIX,qichiyu.com,🚀 默认代理
+  - RULE-SET,ai,🤖 ChatGPT
+  - RULE-SET,github_domain,👨🏿‍💻 GitHub
+  - RULE-SET,youtube_domain,📹 YouTube
+  - RULE-SET,google_domain,🍀 Google
+  - RULE-SET,onedrive_domain,🐬 OneDrive
+  - RULE-SET,microsoft_domain,🪟 Microsoft
+  - RULE-SET,apple_domain,直连
+  - RULE-SET,tiktok_domain,🎵 TikTok
+  - RULE-SET,telegram_domain,📲 Telegram
+  - RULE-SET,netflix_domain,🎥 NETFLIX
+  - RULE-SET,paypal_domain,💶 PayPal
+  - RULE-SET,apple_ip,直连
+  - RULE-SET,google_ip,🍀 Google
+  - RULE-SET,netflix_ip,🎥 NETFLIX
+  - RULE-SET,telegram_ip,📲 Telegram
+  - RULE-SET,geolocation-!cn,🚀 默认代理
+  - RULE-SET,cn_domain,直连
+  - RULE-SET,cn_ip,直连
   - MATCH,🐟 漏网之鱼
+
+# 规则集
+## type：可选http/file/inline  behavior：可选domain/ipcidr/classical format：可选yaml/text/mrs
+rule-anchor:
+  ip: &ip {type: http, interval: 86400, behavior: ipcidr, format: mrs}
+  domain: &domain {type: http, interval: 86400, behavior: domain, format: mrs}
+  class: &class {type: http, interval: 86400, behavior: classical, format: text}
+rule-providers: 
+  private_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.mrs"}
+  ai: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs" }
+  youtube_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs"}
+  google_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.mrs"}
+  github_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/github.mrs"}
+  telegram_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs"}
+  netflix_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/netflix.mrs"}
+  paypal_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/paypal.mrs"}
+  onedrive_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/onedrive.mrs"}
+  microsoft_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.mrs"}
+  apple_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple.mrs"}
+  speedtest_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/ookla-speedtest.mrs"}
+  tiktok_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.mrs"}
+  geolocation-!cn: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs"}
+  cn_domain: { <<: *domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs"}
+  
+  private_ip: {<<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.mrs"}
+  cn_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs"}
+  google_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/google.mrs"}
+  telegram_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs"}
+  netflix_ip: { <<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/netflix.mrs"}
+  apple_ip: {<<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo-lite/geoip/apple.mrs"}
