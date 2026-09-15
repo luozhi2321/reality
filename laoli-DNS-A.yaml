@@ -23,7 +23,7 @@
 # 机场订阅
 proxy-providers:
   Airport1:
-    url: "https://sub.luozhi.site/c/ChEzvB4"
+    url: "https://raw.githubusercontent.com/luozhi2321/reality/refs/heads/main/v13-1.yaml"
     type: http
     interval: 0
     health-check:
