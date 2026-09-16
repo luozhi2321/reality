@@ -73,7 +73,7 @@ proxies:
     flow: xtls-rprx-vision
   - name: JP-vm-argo-server
     type: vmess
-    server: 23.27.169.196
+    server: 104.26.1.217
     port: 443
     uuid: 6c160d39-9de1-48ce-9d94-7ad8d56a574f
     alterId: 0
@@ -105,7 +105,7 @@ proxies:
     udp: true
   - name: Vercel-SG-Amazon.com
     type: vless
-    server: 104.64.192.116
+    server: 104.26.1.217
     port: 443
     uuid: d1cf4b9c-3e57-085d-b34a-797fcf601381
     tls: true
@@ -120,7 +120,7 @@ proxies:
     udp: true
   - name: Vercel-SG-Amazon.com-1
     type: vless
-    server: 103.3.61.43
+    server: 104.26.7.148
     port: 443
     uuid: d1cf4b9c-3e57-085d-b34a-797fcf601381
     tls: true
@@ -135,7 +135,7 @@ proxies:
     udp: true
   - name: Vercel-SG-Amazon.com-TJ
     type: trojan
-    server: 104.64.192.116
+    server: 104.26.1.217
     port: 443
     password: d1cf4b9c-3e57-085d-b34a-797fcf601381
     tls: true
@@ -150,7 +150,7 @@ proxies:
     udp: true
   - name: Vercel-SG-Amazon.com-TJ-1
     type: trojan
-    server: 104.248.158.76
+    server: 104.26.7.148
     port: 443
     password: d1cf4b9c-3e57-085d-b34a-797fcf601381
     tls: true
@@ -165,7 +165,7 @@ proxies:
     udp: true
   - name: US-vm-argo-ECS553388742129-1
     type: vmess
-    server: 103.97.200.42
+    server: 104.26.8.188
     port: 443
     uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
     alterId: 0
@@ -181,7 +181,7 @@ proxies:
     udp: true
   - name: US-vm-argo-ECS553388742129-2
     type: vmess
-    server: 103.170.217.60
+    server: 104.26.11.36
     port: 443
     uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
     alterId: 0
@@ -195,9 +195,9 @@ proxies:
       headers:
         host: twiki-scholars-drinks-coffee.trycloudflare.com
     udp: true
-  - name: US-vm-argo-ECS553388742129-tw
+  - name: US-vm-argo-ECS553388742129-3
     type: vmess
-    server: 142.249.60.51
+    server: 104.26.1.217
     port: 443
     uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
     alterId: 0
@@ -211,9 +211,9 @@ proxies:
       headers:
         host: twiki-scholars-drinks-coffee.trycloudflare.com
     udp: true
-  - name: US-vm-argo-ECS553388742129-US
+  - name: US-vm-argo-ECS553388742129-4
     type: vmess
-    server: 104.18.39.181
+    server: 104.26.7.148
     port: 443
     uuid: 8a21d7e8-fbd6-49d7-a43f-4c44c719fd42
     alterId: 0
@@ -227,10 +227,10 @@ proxies:
       headers:
         host: twiki-scholars-drinks-coffee.trycloudflare.com
     udp: true
-  - name: HK-1
+  - name: HK 移动优选[47ms 773.32Mbps]
     type: vless
-    server: 172.66.1.68
-    port: 443
+    server: 104.26.1.217
+    port: 2087
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
     tls: true
     servername: sf.luozhi.site
@@ -242,10 +242,10 @@ proxies:
     tfo: false
     skip-cert-verify: true
     udp: true
-  - name: HK-2
+  - name: HK 移动优选[35ms 281.34Mbps]
     type: vless
-    server: 104.25.243.207
-    port: 443
+    server: 104.26.7.148
+    port: 2087
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
     tls: true
     servername: sf.luozhi.site
@@ -257,10 +257,10 @@ proxies:
     tfo: false
     skip-cert-verify: true
     udp: true
-  - name: VN -> 28.07 Mbps FAST
+  - name: HK 移动优选[44ms 224.69Mbps]
     type: vless
-    server: 157.66.26.194
-    port: 443
+    server: 104.26.11.36
+    port: 2096
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
     tls: true
     servername: sf.luozhi.site
@@ -272,40 +272,10 @@ proxies:
     tfo: false
     skip-cert-verify: true
     udp: true
-  - name: TH -> 17.68 Mbps FAST
+  - name: HK 移动优选[44ms 226.02Mbps]
     type: vless
-    server: 45.150.128.159
-    port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    tls: true
-    servername: sf.luozhi.site
-    network: ws
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        host: sf.luozhi.site
-    tfo: false
-    skip-cert-verify: true
-    udp: true
-  - name: SG -> 27.01 Mbps FAST
-    type: vless
-    server: 103.170.217.60
-    port: 443
-    uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
-    tls: true
-    servername: sf.luozhi.site
-    network: ws
-    ws-opts:
-      path: /?ed=2560
-      headers:
-        host: sf.luozhi.site
-    tfo: false
-    skip-cert-verify: true
-    udp: true
-  - name: SG -> 24.85 Mbps FAST
-    type: vless
-    server: 104.248.158.76
-    port: 443
+    server: 104.26.8.188
+    port: 2053
     uuid: ef1a7622-72c0-48ea-8cc8-428de8db05f0
     tls: true
     servername: sf.luozhi.site
@@ -332,9 +302,9 @@ proxies:
     tfo: false
     skip-cert-verify: true
     udp: true
-  - name: SG -> 26.9 Mbps FAST
+  - name: HK 移动优选[34ms 447.93Mbps]
     type: vless
-    server: 103.3.61.43
+    server: 104.26.10.36
     port: 443
     uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
     tls: true
@@ -347,40 +317,10 @@ proxies:
     tfo: false
     skip-cert-verify: true
     udp: true
-  - name: SG -> 23.39 Mbps FAST
+  - name: HK 移动优选[40ms 250.55Mbps]
     type: vless
-    server: 104.64.192.116
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    tls: true
-    servername: edt.luozhi.dpdns.org
-    network: ws
-    ws-opts:
-      path: /
-      headers:
-        host: edt.luozhi.dpdns.org
-    tfo: false
-    skip-cert-verify: true
-    udp: true
-  - name: MY -> 25.32 Mbps FAST
-    type: vless
-    server: 198.20.153.87
-    port: 443
-    uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
-    tls: true
-    servername: edt.luozhi.dpdns.org
-    network: ws
-    ws-opts:
-      path: /
-      headers:
-        host: edt.luozhi.dpdns.org
-    tfo: false
-    skip-cert-verify: true
-    udp: true
-  - name: MO -> 68.8 Mbps FAST
-    type: vless
-    server: 45.202.247.152
-    port: 443
+    server: 104.18.33.131
+    port: 2053
     uuid: ad0dcc46-fc83-4a49-824f-467130df2b35
     tls: true
     servername: edt.luozhi.dpdns.org
