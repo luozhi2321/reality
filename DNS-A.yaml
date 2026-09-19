@@ -79,13 +79,13 @@ proxies:
     alterId: 0
     cipher: auto
     tls: true
-    servername: images-nirvana-products-actively.trycloudflare.com
+    servername: vendors-comic-alumni-greensboro.trycloudflare.com
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: 6c160d39-9de1-48ce-9d94-7ad8d56a574f-vm
       headers:
-        host: images-nirvana-products-actively.trycloudflare.com
+        host: vendors-comic-alumni-greensboro.trycloudflare.com
     udp: true
   - name: JP-vm-ws-server
     type: vmess
