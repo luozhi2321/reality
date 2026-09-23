@@ -23,7 +23,7 @@
 # 机场订阅
 proxy-providers:
   Airport1:
-    url: "https://do.267xnn.ooptyucy714.cy26.us/hmccs/cy26716/gsbsya?token=c511f831b2cf541883b4bf9280d47851"
+    url: "https://freesocks.org/api/v1/sub/553945166aa03d92b50721befbb5c782"
     type: http
     interval: 0
     health-check:
@@ -32,6 +32,15 @@ proxy-providers:
       interval: 300
     proxy: 直连
 
+  Airport2:
+    url: "https://do.267xnn.ooptyucy714.cy26.us/hmccs/cy26716/gsbsya?token=c511f831b2cf541883b4bf9280d47851"
+    type: http
+    interval: 0
+    health-check:
+      enable: true
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+    proxy: 直连
 # 节点信息
 proxies:
   - name: JP-hy2-server
